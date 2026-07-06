@@ -5,30 +5,31 @@ M.E. Portfolio Ai Agent
 =======================
 A professional AI equity research tool built on the TradingAgents framework.
 
-Two modes:
+Modes:
   1. Standalone Stock : analyse any single ticker with a price chart, key
      statistics, and a full multi-agent AI report.
-  2. My Portfolio     : build a portfolio (tickers + shares), view allocation
-     analytics, then run the AI across every holding.
+  2. My Portfolio     : build and SAVE a portfolio (tickers + shares), view
+     allocation analytics, then run the AI across every holding.
 
-KEY MODEL:
-  If GOOGLE_API_KEY is set in Streamlit Secrets, the app runs on the owner's
-  key (trial mode) and users enter nothing. Otherwise each user supplies their
-  own key.
+Also includes a Head-to-Head Probability tool (Elo expected-score model).
 
-LOGIN (Streamlit Secrets):
-    GOOGLE_API_KEY = "AIza..."          # optional, enables trial mode
+KEY MODEL (Streamlit Secrets):
+    GOOGLE_API_KEY = "AIza..."   # optional, enables trial mode (owner pays)
+    FRED_API_KEY   = "..."       # optional, enables macro data for everyone
 
     [credentials]
     user1 = "password1"
     user2 = "password2"
     user3 = "password3"
 
-Portfolios are session based in this build and reset on logout.
+Saved portfolios persist while the app is running. On a redeploy or reboot of
+the hosting container the store is reset (see notes for a durable database option).
+
 Research and educational tool only. Not financial advice.
 """
 
 import os
+import json
 import time
 import datetime as dt
 
@@ -42,6 +43,7 @@ TAGLINE = "AI-POWERED INVESTMENT RESEARCH"
 DISCLAIMER = ("Research and educational tool only. Not financial, investment, "
               "or trading advice. AI output is one model's opinion, can be "
               "wrong, and varies between runs.")
+PF_FILE = "portfolios.json"
 
 PROVIDER_KEY_ENV = {"google": "GOOGLE_API_KEY",
                     "openai": "OPENAI_API_KEY",
@@ -56,7 +58,67 @@ SIGNAL_COLORS = {"BUY": "#0E7C4A", "SELL": "#C0392B", "HOLD": "#B7791F",
 
 
 # ---------------------------------------------------------------------------
-# Professional styling
+# Secrets helpers
+# ---------------------------------------------------------------------------
+def get_secret(name):
+    try:
+        return st.secrets.get(name, None)
+    except Exception:
+        return None
+
+
+TRIAL_KEY = get_secret("GOOGLE_API_KEY")
+TRIAL_FRED = get_secret("FRED_API_KEY")
+
+
+# ---------------------------------------------------------------------------
+# Saved-portfolio storage (per user)
+# ---------------------------------------------------------------------------
+def _load_all():
+    try:
+        with open(PF_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+
+def _save_all(data):
+    try:
+        with open(PF_FILE, "w", encoding="utf-8") as f:
+            json.dump(data, f)
+        return True
+    except Exception:
+        return False
+
+
+def load_portfolio(user):
+    return _load_all().get(user, [])
+
+
+def save_portfolio(user, holdings):
+    data = _load_all()
+    data[user] = holdings
+    return _save_all(data)
+
+
+# ---------------------------------------------------------------------------
+# Elo expected-score model (relative ranking, not a return forecast)
+# ---------------------------------------------------------------------------
+def elo_expected(rating_a, rating_b):
+    return 1.0 / (1.0 + 10 ** ((rating_b - rating_a) / 400.0))
+
+
+# Maps the AI signal to an Elo rating. These gaps are assumptions, not
+# empirically calibrated values, and can be edited here.
+SIGNAL_RATING = {"BUY": 1600, "HOLD": 1500, "SELL": 1400}
+
+
+def signal_to_rating(sig):
+    return SIGNAL_RATING.get(str(sig).upper(), 1500)
+
+
+# ---------------------------------------------------------------------------
+# Styling
 # ---------------------------------------------------------------------------
 def inject_style():
     st.markdown("""
@@ -65,7 +127,6 @@ def inject_style():
       html, body, [class*="css"] { font-family:'Inter', system-ui, sans-serif; }
       .block-container { padding-top: 1.2rem; max-width: 1120px; }
       h1, h2, h3, h4 { color:#0F2A43; font-weight:700; letter-spacing:-0.01em; }
-
       .me-header { display:flex; align-items:center; gap:14px;
         padding:6px 0 16px; border-bottom:1px solid #E6E9EF; margin-bottom:18px; }
       .me-logo { width:44px; height:44px; border-radius:10px; background:#0F2A43;
@@ -74,12 +135,10 @@ def inject_style():
       .me-title { font-size:1.4rem; font-weight:700; color:#0F2A43; line-height:1.05; }
       .me-sub { font-size:0.74rem; color:#5B6675; font-weight:600;
         letter-spacing:0.14em; margin-top:2px; }
-
       .stButton>button { border-radius:8px; font-weight:600; padding:0.5rem 1.1rem;
         border:1px solid #D3D9E2; transition:0.15s; }
       .stButton>button[kind="primary"] { background:#0F2A43; border-color:#0F2A43; color:#fff; }
       .stButton>button[kind="primary"]:hover { background:#173e63; border-color:#173e63; }
-
       [data-testid="stMetric"] { background:#F7F9FC; border:1px solid #E6E9EF;
         border-radius:10px; padding:12px 16px; }
       .stTabs [data-baseweb="tab-list"] { gap:2px; }
@@ -107,16 +166,6 @@ def header():
 
 
 # ---------------------------------------------------------------------------
-def get_trial_key():
-    try:
-        return st.secrets.get("GOOGLE_API_KEY", None)
-    except Exception:
-        return None
-
-
-TRIAL_KEY = get_trial_key()
-
-
 def require_login():
     if st.session_state.get("auth_ok"):
         return
@@ -176,10 +225,11 @@ def get_quote(ticker):
 # ---------------------------------------------------------------------------
 inject_style()
 header()
+USER = st.session_state.get("user", "")
 
 with st.sidebar:
     st.markdown("#### Settings")
-    st.caption(f"Signed in as {st.session_state.get('user','')}")
+    st.caption(f"Signed in as {USER}")
     if st.button("Sign out"):
         st.session_state.clear()
         st.rerun()
@@ -199,7 +249,14 @@ with st.sidebar:
         st.caption(f"Free key at {KEY_HELP[provider]}. Used only for your "
                    "session, never stored.")
 
-    fred_key = st.text_input("FRED key (optional, macro)", type="password")
+    # FRED / macro key
+    if TRIAL_FRED:
+        fred_key = None
+        st.caption("Macro data (FRED) is enabled for this app.")
+    else:
+        fred_key = st.text_input("FRED key (optional, macro)", type="password",
+                                 help="Free at fred.stlouisfed.org. Adds Fed rates, "
+                                      "inflation and jobs data to the News analyst.")
 
     st.divider()
     default_model = "gemini-2.5-flash-lite" if provider == "google" else ""
@@ -222,7 +279,9 @@ def apply_keys():
         os.environ["GOOGLE_API_KEY"] = str(TRIAL_KEY)
     elif api_key:
         os.environ[PROVIDER_KEY_ENV[provider]] = api_key.strip()
-    if fred_key:
+    if TRIAL_FRED:
+        os.environ["FRED_API_KEY"] = str(TRIAL_FRED)
+    elif fred_key:
         os.environ["FRED_API_KEY"] = fred_key.strip()
 
 
@@ -348,6 +407,26 @@ def show_chart_and_stats(ticker):
     st.line_chart(q["history"]["Close"], height=260)
 
 
+def head_to_head_tool():
+    with st.expander("Head-to-Head Probability (Elo model)"):
+        st.caption("Estimates the probability that one stock outperforms another, "
+                   "given each one's rating, using the Elo expected-score formula. "
+                   "This is a relative ranking tool, not a return forecast or a "
+                   "valuation. Ratings are inputs you assign (for example, a "
+                   "conviction or momentum score); the model turns a rating gap "
+                   "into a probability.")
+        st.latex(r"E_A = \frac{1}{1 + 10^{(R_B - R_A)/400}}")
+        c1, c2 = st.columns(2)
+        na = c1.text_input("Stock A label", value="Stock A")
+        ra = c1.number_input("Rating A", value=1500, step=10)
+        nb = c2.text_input("Stock B label", value="Stock B")
+        rb = c2.number_input("Rating B", value=1500, step=10)
+        ea = elo_expected(ra, rb)
+        r1, r2 = st.columns(2)
+        r1.metric(f"P({na} outperforms {nb})", f"{ea * 100:.1f}%")
+        r2.metric(f"P({nb} outperforms {na})", f"{(1 - ea) * 100:.1f}%")
+
+
 # ===========================================================================
 mode = st.radio("Mode", ["Standalone Stock", "My Portfolio"], horizontal=True)
 
@@ -385,14 +464,23 @@ if mode == "Standalone Stock":
         st.download_button("Download report", combined_markdown(tk, ds, state, decision),
                            file_name=f"{tk}_{ds}.md", mime="text/markdown")
 
+    st.write("")
+    head_to_head_tool()
+
 # ---------------------------------------------------------------------------
 # MY PORTFOLIO
 # ---------------------------------------------------------------------------
 else:
-    st.markdown('<div class="note-card">Your portfolio is saved for this session '
-                'and resets when you sign out.</div>', unsafe_allow_html=True)
-    st.write("")
+    # Load this user's saved portfolio once per session.
+    if not st.session_state.get("pf_loaded"):
+        st.session_state["pf"] = load_portfolio(USER)
+        st.session_state["pf_loaded"] = True
     st.session_state.setdefault("pf", [])
+
+    st.markdown('<div class="note-card">Your portfolio is saved to your account. '
+                'It loads automatically when you sign in.</div>',
+                unsafe_allow_html=True)
+    st.write("")
 
     with st.form("add_holding", clear_on_submit=True):
         c1, c2, c3 = st.columns([2, 1, 1])
@@ -401,10 +489,11 @@ else:
         if c3.form_submit_button("Add holding") and new_tk:
             st.session_state["pf"] = [h for h in st.session_state["pf"] if h["ticker"] != new_tk]
             st.session_state["pf"].append({"ticker": new_tk, "shares": new_sh})
+            save_portfolio(USER, st.session_state["pf"])
 
     pf = st.session_state["pf"]
     if not pf:
-        st.info("Add a few holdings above to build your portfolio.")
+        st.info("Add a few holdings above to build and save your portfolio.")
     else:
         rows = []
         for h in pf:
@@ -428,6 +517,7 @@ else:
         rm = st.selectbox("Remove a holding", ["None"] + [h["ticker"] for h in pf])
         if rm != "None" and st.button(f"Remove {rm}"):
             st.session_state["pf"] = [h for h in pf if h["ticker"] != rm]
+            save_portfolio(USER, st.session_state["pf"])
             st.rerun()
 
         st.divider()
@@ -468,6 +558,43 @@ else:
             x1, x2 = st.columns(2)
             x1.metric("Weight rated BUY", f"{buys:.1f}%")
             x2.metric("Weight rated SELL", f"{sells:.1f}%")
+
+            # Elo ranking derived from the AI signals
+            sig_map = {tk: normalize_signal(dec) for tk, (stt, dec) in r["results"].items()}
+            if len(sig_map) >= 2:
+                st.markdown("#### AI signal ranking (Elo model)")
+                st.caption("Relative ranking of your holdings, derived from each "
+                           "stock's AI signal (BUY=1600, HOLD=1500, SELL=1400 - "
+                           "assumptions, editable in code). The score is the average "
+                           "probability each stock outperforms the others. "
+                           "Illustrative relative ranking only, not an empirical "
+                           "probability or a return forecast.")
+                names = list(sig_map.keys())
+                ratings = {t: signal_to_rating(sig_map[t]) for t in names}
+                rank_rows = []
+                for t in names:
+                    others = [o for o in names if o != t]
+                    avg = (sum(elo_expected(ratings[t], ratings[o]) for o in others)
+                           / len(others)) if others else 0.5
+                    rank_rows.append({"Ticker": t, "Signal": sig_map[t],
+                                      "Rating": ratings[t],
+                                      "Avg win-prob vs peers %": round(avg * 100, 1)})
+                rank_df = pd.DataFrame(rank_rows).sort_values(
+                    "Avg win-prob vs peers %", ascending=False)
+                st.dataframe(signal_style(rank_df), hide_index=True,
+                             use_container_width=True)
+
+                st.markdown("**Head-to-head from AI signals**")
+                h1, h2 = st.columns(2)
+                a = h1.selectbox("Stock A", names, index=0, key="h2h_a")
+                b = h2.selectbox("Stock B", names,
+                                 index=min(1, len(names) - 1), key="h2h_b")
+                if a != b:
+                    ea = elo_expected(ratings[a], ratings[b])
+                    q1, q2 = st.columns(2)
+                    q1.metric(f"P({a} outperforms {b})", f"{ea * 100:.1f}%")
+                    q2.metric(f"P({b} outperforms {a})", f"{(1 - ea) * 100:.1f}%")
+
             for tk, (state, decision) in r["results"].items():
                 sig = normalize_signal(decision)
                 with st.expander(f"{tk}  -  {sig}"):
