@@ -1,27 +1,29 @@
 """
-TradingAgents Research Platform (v5, trial)
-=============================================
-Two modes:
-  • Standalone Stock — analyse any single ticker: price chart, quick stats,
-                       and a full AI multi-agent report.
-  • My Portfolio     — build a portfolio (add tickers + shares), see allocation
-                       analytics, then run AI analysis across every holding.
+M.E. Portfolio Ai Agent
+=======================
+A professional AI equity research tool built on the TradingAgents framework.
 
-TRIAL / KEY MODEL:
-  • If GOOGLE_API_KEY is set in Streamlit Secrets, the app runs on the OWNER's
-    key (trial mode) and users don't need to enter anything.
-  • If it is NOT set, each user pastes their own key (bring-your-own).
+Two modes:
+  1. Standalone Stock : analyse any single ticker with a price chart, key
+     statistics, and a full multi-agent AI report.
+  2. My Portfolio     : build a portfolio (tickers + shares), view allocation
+     analytics, then run the AI across every holding.
+
+KEY MODEL:
+  If GOOGLE_API_KEY is set in Streamlit Secrets, the app runs on the owner's
+  key (trial mode) and users enter nothing. Otherwise each user supplies their
+  own key.
 
 LOGIN (Streamlit Secrets):
-    GOOGLE_API_KEY = "AIza..."          # optional: enables trial mode
+    GOOGLE_API_KEY = "AIza..."          # optional, enables trial mode
 
     [credentials]
     user1 = "password1"
     user2 = "password2"
     user3 = "password3"
 
-NOTE: Portfolios are session-based in this trial (reset on logout).
-RESEARCH ONLY — NOT FINANCIAL ADVICE.
+Portfolios are session based in this build and reset on logout.
+Research and educational tool only. Not financial advice.
 """
 
 import os
@@ -31,10 +33,13 @@ import datetime as dt
 import pandas as pd
 import streamlit as st
 
-st.set_page_config(page_title="TradingAgents", page_icon="📈", layout="wide")
+st.set_page_config(page_title="M.E. Portfolio Ai Agent", layout="wide")
 
-BETA_BANNER = ("🧪 **Beta — research only. Not financial advice.** "
-               "AI output is one model's opinion and varies run to run.")
+BRAND = "M.E. Portfolio Ai Agent"
+TAGLINE = "AI-POWERED INVESTMENT RESEARCH"
+DISCLAIMER = ("Research and educational tool only. Not financial, investment, "
+              "or trading advice. AI output is one model's opinion, can be "
+              "wrong, and varies between runs.")
 
 PROVIDER_KEY_ENV = {"google": "GOOGLE_API_KEY",
                     "openai": "OPENAI_API_KEY",
@@ -44,10 +49,62 @@ KEY_HELP = {"google": "aistudio.google.com/apikey",
             "anthropic": "console.anthropic.com"}
 ANALYST_LABELS = {"market": "Market (technical)", "news": "News (macro)",
                   "fundamentals": "Fundamentals", "social": "Sentiment (social)"}
-SIGNAL_EMOJI = {"BUY": "🟢 BUY", "SELL": "🔴 SELL", "HOLD": "🟡 HOLD"}
+SIGNAL_COLORS = {"BUY": "#0E7C4A", "SELL": "#C0392B", "HOLD": "#B7791F",
+                 "ERROR": "#8A94A6"}
 
 
-# --- detect trial (owner) key -------------------------------------------
+# ---------------------------------------------------------------------------
+# Professional styling
+# ---------------------------------------------------------------------------
+def inject_style():
+    st.markdown("""
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap');
+      html, body, [class*="css"] { font-family:'Inter', system-ui, sans-serif; }
+      .block-container { padding-top: 1.2rem; max-width: 1120px; }
+      h1, h2, h3, h4 { color:#0F2A43; font-weight:700; letter-spacing:-0.01em; }
+
+      .me-header { display:flex; align-items:center; gap:14px;
+        padding:6px 0 16px; border-bottom:1px solid #E6E9EF; margin-bottom:18px; }
+      .me-logo { width:44px; height:44px; border-radius:10px; background:#0F2A43;
+        color:#fff; display:flex; align-items:center; justify-content:center;
+        font-family:'IBM Plex Mono', monospace; font-weight:700; font-size:1rem; }
+      .me-title { font-size:1.4rem; font-weight:700; color:#0F2A43; line-height:1.05; }
+      .me-sub { font-size:0.74rem; color:#5B6675; font-weight:600;
+        letter-spacing:0.14em; margin-top:2px; }
+
+      .stButton>button { border-radius:8px; font-weight:600; padding:0.5rem 1.1rem;
+        border:1px solid #D3D9E2; transition:0.15s; }
+      .stButton>button[kind="primary"] { background:#0F2A43; border-color:#0F2A43; color:#fff; }
+      .stButton>button[kind="primary"]:hover { background:#173e63; border-color:#173e63; }
+
+      [data-testid="stMetric"] { background:#F7F9FC; border:1px solid #E6E9EF;
+        border-radius:10px; padding:12px 16px; }
+      .stTabs [data-baseweb="tab-list"] { gap:2px; }
+      .sig-badge { padding:3px 11px; border-radius:6px; font-weight:600;
+        font-size:0.8rem; font-family:'IBM Plex Mono', monospace; }
+      .note-card { padding:11px 15px; border-radius:8px; border:1px solid #E6E9EF;
+        background:#F7F9FC; font-size:0.9rem; color:#26364B; }
+      [data-testid="stSidebar"] { background:#FBFCFE; border-right:1px solid #E6E9EF; }
+    </style>
+    """, unsafe_allow_html=True)
+
+
+def signal_badge(sig):
+    c = SIGNAL_COLORS.get(sig, "#455063")
+    return (f'<span class="sig-badge" style="background:{c}1A;color:{c};'
+            f'border:1px solid {c}55">{sig}</span>')
+
+
+def header():
+    st.markdown(
+        f'<div class="me-header"><div class="me-logo">ME</div>'
+        f'<div><div class="me-title">{BRAND}</div>'
+        f'<div class="me-sub">{TAGLINE}</div></div></div>',
+        unsafe_allow_html=True)
+
+
+# ---------------------------------------------------------------------------
 def get_trial_key():
     try:
         return st.secrets.get("GOOGLE_API_KEY", None)
@@ -58,22 +115,24 @@ def get_trial_key():
 TRIAL_KEY = get_trial_key()
 
 
-# --- login gate ----------------------------------------------------------
 def require_login():
     if st.session_state.get("auth_ok"):
         return
-    st.title("🔒 TradingAgents — Beta Access")
-    st.caption(BETA_BANNER)
+    inject_style()
+    header()
+    st.subheader("Sign in")
+    st.markdown(f'<div class="note-card">{DISCLAIMER}</div>', unsafe_allow_html=True)
+    st.write("")
     user = st.text_input("Username")
     pw = st.text_input("Password", type="password")
-    if st.button("Log in", type="primary"):
+    if st.button("Sign in", type="primary"):
         try:
             creds = dict(st.secrets.get("credentials", {}))
         except Exception:
             creds = {}
         if not creds:
             creds = {"demo": "demo"}
-            st.warning("⚠️ No credentials configured — open demo mode. "
+            st.warning("No credentials configured. Running in open demo mode. "
                        "Set a [credentials] block in Secrets before sharing.")
         if pw and creds.get(user) == pw:
             st.session_state["auth_ok"] = True
@@ -86,13 +145,11 @@ def require_login():
 
 require_login()
 
-# Heavy imports only after login.
 import yfinance as yf
 from tradingagents.default_config import DEFAULT_CONFIG
 from tradingagents.graph.trading_graph import TradingAgentsGraph
 
 
-# --- market data helpers (free — no LLM cost) ---------------------------
 @st.cache_data(ttl=900, show_spinner=False)
 def get_history(ticker, period="6mo"):
     try:
@@ -110,41 +167,37 @@ def get_quote(ticker):
     close = df["Close"]
     last = float(close.iloc[-1])
     prev = float(close.iloc[-2]) if len(close) > 1 else last
-    return {
-        "price": last,
-        "chg_pct": (last / prev - 1) * 100 if prev else 0,
-        "hi_52": float(close.max()),
-        "lo_52": float(close.min()),
-        "history": df,
-    }
+    return {"price": last, "chg_pct": (last / prev - 1) * 100 if prev else 0,
+            "hi_52": float(close.max()), "lo_52": float(close.min()), "history": df}
 
 
-# ----------------------------------------------------------------------
-st.title("📈 TradingAgents — Research Platform")
-st.info(BETA_BANNER)
+# ---------------------------------------------------------------------------
+inject_style()
+header()
 
 with st.sidebar:
-    st.header("⚙️ Settings")
-    st.caption(f"Signed in as **{st.session_state.get('user','')}**")
-    if st.button("Log out"):
+    st.markdown("#### Settings")
+    st.caption(f"Signed in as {st.session_state.get('user','')}")
+    if st.button("Sign out"):
         st.session_state.clear()
         st.rerun()
 
     st.divider()
     if TRIAL_KEY:
         provider = "google"
-        st.success("✅ Trial mode — AI analyses run on the provider's key. "
-                   "No key needed.")
+        st.markdown('<div class="note-card">Trial mode active. AI analyses run '
+                    'on the provider key. No key required.</div>',
+                    unsafe_allow_html=True)
         api_key = None
     else:
-        st.subheader("🔑 Your API key")
+        st.markdown("**API key**")
         provider = st.selectbox("Provider", ["google", "openai", "anthropic"])
         api_key = st.text_input("API key", type="password",
                                 help=f"Get one at {KEY_HELP[provider]}")
-        st.caption(f"🔒 Free key at {KEY_HELP[provider]}. Used only for your "
+        st.caption(f"Free key at {KEY_HELP[provider]}. Used only for your "
                    "session, never stored.")
 
-    fred_key = st.text_input("FRED key (optional macro)", type="password")
+    fred_key = st.text_input("FRED key (optional, macro)", type="password")
 
     st.divider()
     default_model = "gemini-2.5-flash-lite" if provider == "google" else ""
@@ -201,25 +254,28 @@ def run_one(ticker, date_str, cfg, selected, retries=2):
             return state, decision, None
         except Exception as e:  # noqa: BLE001
             last = str(e)
-            if any(x in last for x in ("429", "RESOURCE_EXHAUSTED", "503", "UNAVAILABLE")) and attempt < retries:
-                time.sleep(20 * (attempt + 1)); continue
+            transient = any(x in last for x in
+                            ("429", "RESOURCE_EXHAUSTED", "503", "UNAVAILABLE"))
+            if transient and attempt < retries:
+                time.sleep(20 * (attempt + 1))
+                continue
             return None, None, last
     return None, None, last
 
 
 def combined_markdown(ticker, date, state, decision):
     def b(t, body):
-        return f"\n\n## {t}\n\n{body or '_n/a_'}"
+        return f"\n\n## {t}\n\n{body or '_Not available._'}"
     deb = state.get("investment_debate_state", {}) or {}
     rk = state.get("risk_debate_state", {}) or {}
-    md = f"# {ticker} ({date})\n\n**Signal:** {decision}\n"
+    md = f"# {ticker} ({date})\n\nSignal: {decision}\n"
     md += b("Final Decision", state.get("final_trade_decision"))
     md += b("Market", state.get("market_report"))
     md += b("News", state.get("news_report"))
     md += b("Fundamentals", state.get("fundamentals_report"))
     md += b("Sentiment", state.get("sentiment_report"))
-    md += b("Bull", deb.get("bull_history"))
-    md += b("Bear", deb.get("bear_history"))
+    md += b("Bull Case", deb.get("bull_history"))
+    md += b("Bear Case", deb.get("bear_history"))
     md += b("Research Verdict", deb.get("judge_decision"))
     md += b("Trader Plan", state.get("trader_investment_plan"))
     md += b("Risk Verdict", rk.get("judge_decision"))
@@ -229,36 +285,36 @@ def combined_markdown(ticker, date, state, decision):
 def render_report(state, decision):
     deb = state.get("investment_debate_state", {}) or {}
     rk = state.get("risk_debate_state", {}) or {}
-    tabs = st.tabs(["🏁 Final", "📊 Market", "🌍 News", "💰 Fundamentals",
-                    "💬 Sentiment", "🐂🐻 Bull/Bear", "🧑‍💼 Trader", "⚖️ Risk"])
-    tabs[0].markdown(state.get("final_trade_decision") or "_n/a_")
+    tabs = st.tabs(["Final Decision", "Market", "News", "Fundamentals",
+                    "Sentiment", "Bull vs Bear", "Trader", "Risk"])
+    tabs[0].markdown(state.get("final_trade_decision") or "_Not available._")
     tabs[1].markdown(state.get("market_report") or "_Not run._")
     tabs[2].markdown(state.get("news_report") or "_Not run._")
     tabs[3].markdown(state.get("fundamentals_report") or "_Not run._")
     tabs[4].markdown(state.get("sentiment_report") or "_Not run._")
     with tabs[5]:
-        st.subheader("Bull"); st.markdown(deb.get("bull_history") or "_n/a_")
-        st.subheader("Bear"); st.markdown(deb.get("bear_history") or "_n/a_")
-        st.subheader("Verdict"); st.markdown(deb.get("judge_decision") or "_n/a_")
+        st.markdown("**Bull case**"); st.markdown(deb.get("bull_history") or "_n/a_")
+        st.markdown("**Bear case**"); st.markdown(deb.get("bear_history") or "_n/a_")
+        st.markdown("**Research verdict**"); st.markdown(deb.get("judge_decision") or "_n/a_")
     tabs[6].markdown(state.get("trader_investment_plan") or "_n/a_")
     tabs[7].markdown(rk.get("judge_decision") or "_n/a_")
 
 
 def friendly_error(msg):
     if "RESOURCE_EXHAUSTED" in msg or "429" in msg:
-        st.error("**Rate limit (429).** The AI key's quota is used up for now. "
+        st.error("Rate limit reached (429). The AI key quota is used up for now. "
                  "Try again later or use gemini-2.5-flash-lite.")
     elif "503" in msg or "UNAVAILABLE" in msg:
-        st.warning("**Provider busy (503).** Try again shortly.")
+        st.warning("Provider busy (503). Please try again shortly.")
     elif "API key" in msg or "API_KEY" in msg:
-        st.error("**API key problem.** Check the key is valid for this provider/model.")
+        st.error("API key problem. Check the key is valid for this provider and model.")
     else:
         st.error(msg)
 
 
 def preflight():
     if not key_ready():
-        st.error("🔑 Enter your API key in the sidebar first."); return False
+        st.error("Enter your API key in the sidebar first."); return False
     if not analysts:
         st.error("Select at least one analyst."); return False
     if not quick_model or not deep_model:
@@ -266,69 +322,81 @@ def preflight():
     return True
 
 
+def signal_style(df):
+    def color(v):
+        for s, c in SIGNAL_COLORS.items():
+            if s in str(v):
+                return f"color:{c}; font-weight:600"
+        return ""
+    return df.style.map(color, subset=["Signal"])
+
+
 def show_chart_and_stats(ticker):
     q = get_quote(ticker)
     if not q:
-        st.warning(f"Couldn't load price data for {ticker}. Check the symbol.")
+        st.warning(f"Could not load price data for {ticker}. Check the symbol.")
         return
     c1, c2, c3, c4 = st.columns(4)
     c1.metric("Price", f"${q['price']:.2f}", f"{q['chg_pct']:+.2f}%")
-    c2.metric("52-wk high", f"${q['hi_52']:.2f}")
-    c3.metric("52-wk low", f"${q['lo_52']:.2f}")
-    rng = (q['price'] - q['lo_52']) / (q['hi_52'] - q['lo_52']) * 100 if q['hi_52'] > q['lo_52'] else 0
-    c4.metric("In 52-wk range", f"{rng:.0f}%")
+    c2.metric("52-week high", f"${q['hi_52']:.2f}")
+    c3.metric("52-week low", f"${q['lo_52']:.2f}")
+    rng = ((q['price'] - q['lo_52']) / (q['hi_52'] - q['lo_52']) * 100
+           if q['hi_52'] > q['lo_52'] else 0)
+    c4.metric("Position in range", f"{rng:.0f}%")
     st.line_chart(q["history"]["Close"], height=260)
 
 
-# ======================================================================
-mode = st.radio("Choose a mode", ["📊 Standalone Stock", "💼 My Portfolio"],
-                horizontal=True)
+# ===========================================================================
+mode = st.radio("Mode", ["Standalone Stock", "My Portfolio"], horizontal=True)
 
-# ----------------------------------------------------------------------
-# MODE A — STANDALONE STOCK
-# ----------------------------------------------------------------------
-if mode == "📊 Standalone Stock":
+# ---------------------------------------------------------------------------
+# STANDALONE STOCK
+# ---------------------------------------------------------------------------
+if mode == "Standalone Stock":
     ticker = st.text_input("Ticker", value="", placeholder="e.g. AAPL").strip().upper()
     if ticker:
-        st.subheader(f"{ticker} — price & stats")
+        st.markdown(f"#### {ticker}")
         show_chart_and_stats(ticker)
 
-    if st.button("🤖 Run AI Analysis", type="primary"):
+    if st.button("Run AI Analysis", type="primary"):
         if not ticker:
             st.error("Enter a ticker.")
         elif preflight():
             apply_keys()
             ds = analysis_date.strftime("%Y-%m-%d")
-            with st.status(f"Analysing {ticker}…", expanded=True) as s:
-                st.write(f"{len(analysts)} analyst(s) + research + risk…")
+            with st.status(f"Analysing {ticker} ...", expanded=True) as s:
+                st.write(f"{len(analysts)} analyst(s) plus research and risk review.")
                 state, decision, err = run_one(ticker, ds, build_config(), analysts)
                 if err:
-                    s.update(label="❌ Failed", state="error"); friendly_error(err); st.stop()
-                s.update(label=f"✅ Done — {ticker}", state="complete")
+                    s.update(label="Failed", state="error"); friendly_error(err); st.stop()
+                s.update(label=f"Completed: {ticker}", state="complete")
             st.session_state["a_result"] = (ticker, ds, state, decision)
 
     if "a_result" in st.session_state:
         tk, ds, state, decision = st.session_state["a_result"]
         sig = normalize_signal(decision)
-        st.success(f"**{tk}** — AI signal: **{SIGNAL_EMOJI.get(sig, sig)}**")
+        st.markdown(
+            f'<div class="note-card">{tk} analysis complete. Signal: '
+            f'{signal_badge(sig)}</div>', unsafe_allow_html=True)
+        st.write("")
         render_report(state, decision)
-        st.download_button("⬇️ Download report", combined_markdown(tk, ds, state, decision),
+        st.download_button("Download report", combined_markdown(tk, ds, state, decision),
                            file_name=f"{tk}_{ds}.md", mime="text/markdown")
 
-# ----------------------------------------------------------------------
-# MODE B — MY PORTFOLIO
-# ----------------------------------------------------------------------
+# ---------------------------------------------------------------------------
+# MY PORTFOLIO
+# ---------------------------------------------------------------------------
 else:
-    st.caption("ℹ️ Trial: your portfolio is saved for this session and resets when "
-               "you log out.")
-    st.session_state.setdefault("pf", [])  # list of {ticker, shares}
+    st.markdown('<div class="note-card">Your portfolio is saved for this session '
+                'and resets when you sign out.</div>', unsafe_allow_html=True)
+    st.write("")
+    st.session_state.setdefault("pf", [])
 
     with st.form("add_holding", clear_on_submit=True):
         c1, c2, c3 = st.columns([2, 1, 1])
         new_tk = c1.text_input("Ticker").strip().upper()
         new_sh = c2.number_input("Shares", min_value=0.0, value=1.0, step=1.0)
-        add = c3.form_submit_button("➕ Add")
-        if add and new_tk:
+        if c3.form_submit_button("Add holding") and new_tk:
             st.session_state["pf"] = [h for h in st.session_state["pf"] if h["ticker"] != new_tk]
             st.session_state["pf"].append({"ticker": new_tk, "shares": new_sh})
 
@@ -336,7 +404,6 @@ else:
     if not pf:
         st.info("Add a few holdings above to build your portfolio.")
     else:
-        # Build analytics table
         rows = []
         for h in pf:
             q = get_quote(h["ticker"])
@@ -347,61 +414,65 @@ else:
         total = adf["Value"].sum()
         adf["Weight %"] = (adf["Value"] / total * 100).round(1) if total else 0
 
-        st.subheader("💼 Holdings")
+        st.markdown("#### Holdings")
         st.dataframe(adf, hide_index=True, use_container_width=True)
         m1, m2 = st.columns(2)
         m1.metric("Total value", f"${total:,.0f}")
         m2.metric("Positions", len(pf))
 
-        st.subheader("📊 Allocation")
+        st.markdown("#### Allocation")
         st.bar_chart(adf.set_index("Ticker")["Weight %"], height=240)
 
-        rm = st.selectbox("Remove a holding", ["—"] + [h["ticker"] for h in pf])
-        if rm != "—" and st.button(f"Remove {rm}"):
+        rm = st.selectbox("Remove a holding", ["None"] + [h["ticker"] for h in pf])
+        if rm != "None" and st.button(f"Remove {rm}"):
             st.session_state["pf"] = [h for h in pf if h["ticker"] != rm]
             st.rerun()
 
         st.divider()
-        pace = st.slider("Pause between tickers (sec)", 0, 30, 5)
-        if st.button("🤖 Analyse Whole Portfolio with AI", type="primary"):
+        pace = st.slider("Pause between tickers (seconds)", 0, 30, 5)
+        if st.button("Analyse Whole Portfolio", type="primary"):
             if preflight():
                 apply_keys()
                 ds = analysis_date.strftime("%Y-%m-%d")
                 cfg = build_config()
                 wt = {r["Ticker"]: r["Weight %"] for r in rows}
-                prog = st.progress(0.0, text="Starting…")
+                prog = st.progress(0.0, text="Starting ...")
                 dash, results = [], {}
                 tickers = [h["ticker"] for h in pf]
                 for i, tk in enumerate(tickers):
-                    prog.progress(i / len(tickers), text=f"Analysing {tk} ({i+1}/{len(tickers)})…")
+                    prog.progress(i / len(tickers), text=f"Analysing {tk} ({i+1}/{len(tickers)}) ...")
                     state, decision, err = run_one(tk, ds, cfg, analysts)
                     if err:
                         dash.append({"Ticker": tk, "Weight %": wt.get(tk, 0),
-                                     "Signal": "⚠️ ERROR", "Detail": err[:50]}); continue
+                                     "Signal": "ERROR", "Note": err[:50]}); continue
                     sig = normalize_signal(decision)
                     flag = "High weight" if (sig in ("SELL", "HOLD") and wt.get(tk, 0) >= 15) else ""
                     dash.append({"Ticker": tk, "Weight %": wt.get(tk, 0),
-                                 "Signal": SIGNAL_EMOJI.get(sig, sig), "Note": flag})
+                                 "Signal": sig, "Note": flag})
                     results[tk] = (state, decision)
                     if pace and i < len(tickers) - 1:
                         time.sleep(pace)
-                prog.progress(1.0, text="Done.")
+                prog.progress(1.0, text="Complete.")
                 st.session_state["pf_result"] = {"dash": pd.DataFrame(dash),
                                                  "results": results, "date": ds}
 
         if "pf_result" in st.session_state:
             r = st.session_state["pf_result"]
-            st.subheader("🧭 Portfolio signal dashboard")
-            st.dataframe(r["dash"], hide_index=True, use_container_width=True)
+            st.markdown("#### Portfolio signal dashboard")
+            st.dataframe(signal_style(r["dash"]), hide_index=True, use_container_width=True)
             d = r["dash"]
-            buys = d[d["Signal"].str.contains("BUY")]["Weight %"].sum()
-            sells = d[d["Signal"].str.contains("SELL")]["Weight %"].sum()
+            buys = d[d["Signal"] == "BUY"]["Weight %"].sum()
+            sells = d[d["Signal"] == "SELL"]["Weight %"].sum()
             x1, x2 = st.columns(2)
             x1.metric("Weight rated BUY", f"{buys:.1f}%")
             x2.metric("Weight rated SELL", f"{sells:.1f}%")
             for tk, (state, decision) in r["results"].items():
                 sig = normalize_signal(decision)
-                with st.expander(f"{tk} — {SIGNAL_EMOJI.get(sig, sig)}"):
+                with st.expander(f"{tk}  -  {sig}"):
                     render_report(state, decision)
-            st.warning("⚠️ Each signal is judged per-stock in isolation — it does NOT "
-                       "assess concentration across your portfolio. Not financial advice.")
+            st.markdown('<div class="note-card">Each signal is judged per stock in '
+                        'isolation and does not assess concentration across the '
+                        'portfolio. Not financial advice.</div>', unsafe_allow_html=True)
+
+st.write("")
+st.caption(DISCLAIMER)
