@@ -14,7 +14,7 @@ Modes:
 Also includes a Head-to-Head Probability tool (Elo expected-score model).
 
 KEY MODEL (Streamlit Secrets):
-    GOOGLE_API_KEY = "AIza..."   # optional, enables trial mode (owner pays)
+    GOOGLE_API_KEY = "AQ..."   # optional, enables trial mode (owner pays)
     FRED_API_KEY   = "c7a573446e6399efc2f7fa2480ad21e2"       # optional, enables macro data for everyone
 
     [credentials]
