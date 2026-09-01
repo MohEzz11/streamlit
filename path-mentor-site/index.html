@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Path Mentor — Coaching for Growth and Success</title>
+<meta name="description" content="Personalized coaching and mentorship to help you navigate career challenges, set meaningful goals, and plan your life with confidence.">
+<meta property="og:title" content="Path Mentor: Coaching for Growth and Success">
+<meta property="og:description" content="Personalized coaching and mentorship to help you navigate career challenges, set meaningful goals, and plan your life with confidence.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://path-mentor.com/">
+<link rel="icon" type="image/svg+xml" href="https://assets.zyrosite.com/GXTDL6SjJLoEWWkF/ai-logo-1DENE1Arya08cUEI.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* ---------- Design tokens (from live path-mentor.com brand) ---------- */
+  :root{
+    --teal:#256D85;
+    --teal-dark:#1d566a;
+    --slate:#1A2A32;      /* header / footer / dark sections */
+    --slate-2:#2F4C5A;
+    --ink:#0d141a;        /* headings on light */
+    --muted:#56585E;      /* body text on light */
+    --mist:#E7F6F8;       /* form panel */
+    --line:#dbe3e6;
+    --white:#ffffff;
+
+    --font:'Montserrat', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+
+    --maxw:1224px;
+    --radius-sm:10px;
+    --radius:20px;
+    --radius-lg:34px;
+    --pill:999px;
+
+    --shadow-sm:0 1px 2px rgba(13,20,26,.06);
+    --shadow-md:0 8px 24px rgba(13,20,26,.10);
+    --shadow-lg:0 18px 48px rgba(13,20,26,.16);
+
+    --ease:.25s ease;
+  }
+
+  *,*::before,*::after{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;
+    font-family:var(--font);
+    font-size:16px;
+    line-height:1.5;
+    color:var(--ink);
+    background:var(--white);
+    -webkit-font-smoothing:antialiased;
+  }
+  img{max-width:100%;display:block}
+  a{color:inherit;text-decoration:none}
+
+  h1,h2,h3,h4,h5,h6{
+    font-family:var(--font);font-weight:600;line-height:1.25;margin:0;
+    letter-spacing:-.01em;
+  }
+  h1{font-size:clamp(2.4rem,5.2vw,4rem)}
+  h2{font-size:clamp(1.9rem,3.8vw,3rem)}
+  h3{font-size:clamp(1.6rem,3vw,2.25rem)}
+  h5{font-size:clamp(1.25rem,2vw,1.6rem)}
+  h6{font-size:1.125rem}
+  p{margin:0}
+  .muted{color:var(--muted)}
+
+  .wrap{width:100%;max-width:var(--maxw);margin-inline:auto;padding-inline:24px}
+  .eyebrow{
+    text-transform:uppercase;letter-spacing:.14em;font-size:.8rem;font-weight:600;
+    color:var(--teal);
+  }
+  .section{padding:clamp(56px,8vw,104px) 0}
+  .section-head{max-width:640px;margin-bottom:48px}
+  .section-head.center{margin-inline:auto;text-align:center}
+  .section-head p{margin-top:14px;color:var(--muted);font-size:1.05rem}
+
+  /* ---------- Buttons ---------- */
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:.5rem;
+    font-family:var(--font);font-weight:500;font-size:1rem;
+    padding:15px 34px;border-radius:var(--pill);border:1px solid transparent;
+    cursor:pointer;transition:transform var(--ease),box-shadow var(--ease),background var(--ease);
+  }
+  .btn:focus-visible{outline:3px solid var(--teal);outline-offset:3px}
+  .btn-primary{background:var(--teal);color:#fff}
+  .btn-primary:hover{background:var(--teal-dark);transform:translateY(-2px);box-shadow:var(--shadow-md)}
+  .btn-ghost{background:transparent;color:#fff;border-color:rgba(255,255,255,.6)}
+  .btn-ghost:hover{background:rgba(255,255,255,.12);transform:translateY(-2px)}
+
+  /* ---------- Announcement bar ---------- */
+  .announce{
+    background:var(--slate-2);color:#fff;text-align:center;
+    font-size:.85rem;font-weight:700;letter-spacing:.02em;padding:9px 16px;
+  }
+
+  /* ---------- Header ---------- */
+  .site-header{
+    position:sticky;top:0;z-index:50;background:var(--slate);
+    border-bottom:1px solid rgba(255,255,255,.06);
+  }
+  .nav{display:flex;align-items:center;gap:28px;min-height:76px;padding-block:14px}
+  .brand{display:flex;align-items:center;gap:12px;margin-right:auto}
+  .brand img{height:52px;width:auto}
+  .brand .brand-text{color:#fff;font-weight:600;font-size:1.15rem;letter-spacing:.01em}
+  .nav-links{display:flex;align-items:center;gap:30px;list-style:none;margin:0;padding:0}
+  .nav-links a{color:#fff;font-size:1rem;font-weight:400;padding:6px 2px;position:relative;transition:color var(--ease)}
+  .nav-links a::after{content:"";position:absolute;left:0;right:100%;bottom:-2px;height:2px;background:var(--teal);transition:right var(--ease)}
+  .nav-links a:hover,.nav-links a:focus-visible{color:#bfe0ea}
+  .nav-links a:hover::after,.nav-links a[aria-current="page"]::after{right:0}
+  .nav-actions{display:flex;align-items:center;gap:18px}
+  .social{display:flex;align-items:center;gap:16px}
+  .social a{color:#fff;display:inline-flex;transition:color var(--ease),transform var(--ease)}
+  .social a:hover{color:#bfe0ea;transform:translateY(-1px)}
+  .icon-btn{background:none;border:0;color:#fff;cursor:pointer;display:inline-flex;padding:4px}
+  .burger{display:none;background:none;border:0;cursor:pointer;flex-direction:column;gap:5px;padding:8px}
+  .burger span{width:24px;height:2px;background:#fff;border-radius:2px;transition:var(--ease)}
+
+  /* ---------- Hero ---------- */
+  .hero{position:relative;min-height:clamp(520px,72vh,760px);display:grid;place-items:center;overflow:hidden;color:#fff;text-align:center}
+  .hero__media{position:absolute;inset:0;z-index:0}
+  .hero__media video,.hero__media img{width:100%;height:100%;object-fit:cover}
+  .hero__media::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(26,42,50,.55),rgba(26,42,50,.55))}
+  .hero__inner{position:relative;z-index:1;max-width:860px;padding:80px 24px}
+  .hero h1{color:#fff;margin-bottom:8px}
+  .hero__sub{font-size:clamp(1.1rem,2.2vw,1.6rem);font-weight:400;line-height:1.4;color:rgba(255,255,255,.94);max-width:720px;margin:0 auto 32px}
+  .hero__cta{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+
+  /* ---------- Services ---------- */
+  .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:28px}
+  .card{
+    background:#fff;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;
+    box-shadow:var(--shadow-sm);transition:transform var(--ease),box-shadow var(--ease);
+    display:flex;flex-direction:column;
+  }
+  .card:hover{transform:translateY(-4px);box-shadow:var(--shadow-md)}
+  .card__img{aspect-ratio:4/3;overflow:hidden}
+  .card__img img{width:100%;height:100%;object-fit:cover;transition:transform .4s ease}
+  .card:hover .card__img img{transform:scale(1.04)}
+  .card__body{padding:24px 24px 28px}
+  .card__body h6{margin-bottom:10px}
+  .card__body p{color:var(--muted)}
+
+  /* ---------- Feature / Guiding section ---------- */
+  .feature{display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center}
+  .feature__img img{border-radius:var(--radius-lg);box-shadow:var(--shadow-md);width:100%;object-fit:cover}
+  .feature__list{margin-top:28px;display:grid;gap:22px}
+  .feature__item{display:flex;gap:16px;align-items:flex-start}
+  .feature__item .dot{flex:0 0 auto;width:44px;height:44px;border-radius:12px;background:var(--mist);color:var(--teal);display:grid;place-items:center}
+  .feature__item h6{margin-bottom:4px}
+  .feature__item p{color:var(--muted)}
+
+  /* ---------- Testimonial ---------- */
+  .quote{background:var(--slate);color:#fff;border-radius:var(--radius-lg);padding:clamp(40px,6vw,72px);text-align:center;position:relative;overflow:hidden}
+  .quote::before{content:"“";position:absolute;top:-10px;left:32px;font-size:9rem;line-height:1;color:rgba(255,255,255,.08);font-family:Georgia,serif}
+  .stars{color:#ffcd35;font-size:1.4rem;letter-spacing:4px;margin-bottom:18px}
+  .quote blockquote{margin:0 auto;max-width:720px;font-size:clamp(1.25rem,2.6vw,1.9rem);font-weight:500;line-height:1.45}
+  .quote figcaption{margin-top:22px;display:inline-flex;align-items:center;gap:12px;color:rgba(255,255,255,.85)}
+  .quote figcaption img{width:46px;height:46px;border-radius:50%;object-fit:cover}
+
+  /* ---------- Contact / Booking ---------- */
+  .contact{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center}
+  .contact__img img{border-radius:var(--radius);box-shadow:var(--shadow-md);width:100%;object-fit:cover;aspect-ratio:4/3}
+  .form-panel{background:var(--mist);border-radius:var(--radius);padding:clamp(28px,4vw,40px)}
+  .field{margin-bottom:18px}
+  .field label{display:block;font-size:.875rem;font-weight:500;color:var(--ink);margin-bottom:7px}
+  .field input,.field textarea{
+    width:100%;font-family:var(--font);font-size:1rem;color:var(--ink);
+    background:#fff;border:1px solid #b8c0cc;border-radius:var(--radius-sm);
+    padding:13px 14px;transition:border-color var(--ease),box-shadow var(--ease);
+  }
+  .field textarea{min-height:56px;resize:vertical}
+  .field input:focus,.field textarea:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px rgba(37,109,133,.15)}
+  .form-panel .btn{width:auto;margin-top:6px}
+  .form-note{font-size:.8rem;color:var(--muted);margin-top:14px}
+  .form-success{display:none;background:#def4f0;color:#00674c;border-radius:var(--radius-sm);padding:14px 16px;font-weight:500;margin-top:14px}
+  .form-success.show{display:block}
+
+  /* ---------- Footer ---------- */
+  .site-footer{background:var(--slate);color:#fff;padding:clamp(48px,7vw,72px) 0 32px}
+  .footer-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:40px;align-items:start}
+  .site-footer h5{color:#fff;margin-bottom:14px}
+  .site-footer p{color:rgba(255,255,255,.8)}
+  .footer-label{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.7);margin-bottom:4px}
+  .site-footer a.link{color:#fff;border-bottom:1px solid rgba(255,255,255,.3)}
+  .site-footer a.link:hover{border-color:#fff}
+  .footer-sub{display:flex;gap:10px;margin-top:10px;flex-wrap:wrap}
+  .footer-sub input{flex:1 1 180px;background:#fff;border:1px solid #b8c0cc;border-radius:var(--radius-sm);padding:12px 14px;font-family:var(--font);font-size:.95rem}
+  .footer-sub input:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px rgba(37,109,133,.25)}
+  .footer-social{display:flex;gap:18px;margin-top:18px}
+  .footer-social a{color:#fff;display:inline-flex;transition:transform var(--ease),color var(--ease)}
+  .footer-social a:hover{color:#bfe0ea;transform:translateY(-1px)}
+  .footer-bottom{border-top:1px solid rgba(255,255,255,.12);margin-top:40px;padding-top:22px;font-size:.85rem;color:rgba(255,255,255,.7)}
+
+  /* ---------- Responsive ---------- */
+  @media (max-width:920px){
+    .feature,.contact{grid-template-columns:1fr;gap:32px}
+    .contact__img{order:-1}
+    .cards{grid-template-columns:1fr 1fr}
+    .footer-grid{grid-template-columns:1fr 1fr}
+  }
+  @media (max-width:720px){
+    .nav-links,.nav .social,.nav .cart{display:none}
+    .burger{display:flex}
+    .nav.open .nav-links{
+      display:flex;position:absolute;left:0;right:0;top:100%;flex-direction:column;
+      align-items:flex-start;gap:4px;background:var(--slate);padding:16px 24px 24px;
+      border-bottom:1px solid rgba(255,255,255,.08);box-shadow:var(--shadow-lg);
+    }
+    .nav.open .nav-links a{width:100%;padding:12px 0}
+    .cards{grid-template-columns:1fr}
+    .footer-grid{grid-template-columns:1fr}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+  }
+</style>
+</head>
+<body>
+
+<!-- Announcement -->
+<div class="announce">Save 20% on coaching sessions!</div>
+
+<!-- Header -->
+<header class="site-header">
+  <div class="wrap">
+    <nav class="nav" id="nav" aria-label="Primary">
+      <a class="brand" href="#top" aria-label="Path Mentor home">
+        <img src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=384,fit=crop/GXTDL6SjJLoEWWkF/gemini_generated_image_z4r65ez4r65ez4r6-1-_nero_ai_background_remover_transparent-OSoErXMEDrhYJYgp.png" alt="Path Mentor logo" onerror="this.style.display='none';this.nextElementSibling.style.display='inline'">
+        <span class="brand-text" style="display:none">Path Mentor</span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="#top" aria-current="page">Home</a></li>
+        <li><a href="#services">Services</a></li>
+        <li><a href="#book">Bookings</a></li>
+        <li><a href="#about">About</a></li>
+        <li><a href="#book">Path Planner</a></li>
+      </ul>
+      <div class="nav-actions">
+        <div class="social" aria-label="Social links">
+          <a href="https://www.instagram.com/path_mentor?igsh=MTZ2NWJmbnc2NTZrMw==&utm_source=qr" target="_blank" rel="noopener" aria-label="Instagram">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 5.85A6.15 6.15 0 1 0 12 18.15 6.15 6.15 0 0 0 12 5.85Zm0 10.15A4 4 0 1 1 12 8a4 4 0 0 1 0 8Zm7.84-10.4a1.44 1.44 0 1 1-1.44-1.44 1.44 1.44 0 0 1 1.44 1.44ZM23.92 7.05A6.86 6.86 0 0 0 21.98 2.02 6.86 6.86 0 0 0 16.95.09C14.97-.03 9.03-.03 7.05.09A6.86 6.86 0 0 0 2.02 2.02 6.86 6.86 0 0 0 .08 7.05C-.03 9.03-.03 14.97.08 16.95a6.86 6.86 0 0 0 1.94 5.03 6.86 6.86 0 0 0 5.03 1.93c1.98.12 7.92.12 9.9 0a6.86 6.86 0 0 0 5.03-1.93 6.86 6.86 0 0 0 1.94-5.03c.11-1.98.11-7.91 0-9.9Zm-2.56 12.02a4.05 4.05 0 0 1-2.28 2.28c-1.58.63-5.33.48-7.08.48s-5.5.14-7.07-.48a4.05 4.05 0 0 1-2.28-2.28c-.63-1.58-.48-5.33-.48-7.07s-.15-5.5.48-7.07A4.05 4.05 0 0 1 4.93 2.65C6.5 2.02 10.25 2.16 12 2.16s5.5-.14 7.08.49a4.05 4.05 0 0 1 2.28 2.28c.63 1.57.48 5.32.48 7.07s.15 5.5-.48 7.07Z"/></svg>
+          </a>
+          <a href="https://www.linkedin.com/in/ala-a-abdalla-mba-pmp%C2%AE-11b1a917/" target="_blank" rel="noopener" aria-label="LinkedIn">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.2 21H1.85V6.98H6.2V21ZM4.02 5.07A2.53 2.53 0 1 1 4.02 0a2.53 2.53 0 0 1 0 5.07ZM22.5 21h-4.35v-6.83c0-1.63-.03-3.71-2.26-3.71-2.27 0-2.61 1.77-2.61 3.6V21H8.93V6.98h4.17v1.91h.06c.58-1.1 2-2.26 4.12-2.26 4.4 0 5.22 2.9 5.22 6.67V21Z"/></svg>
+          </a>
+        </div>
+        <button class="icon-btn cart" aria-label="Cart">
+          <svg width="19" height="22" viewBox="0 0 19 24" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M5.95 5.36A3.77 3.77 0 0 1 9.68 1.4a3.77 3.77 0 0 1 3.73 3.96H5.95Zm-1.41 0A5.17 5.17 0 0 1 9.68 0a5.17 5.17 0 0 1 5.14 5.36h3.86V21.2A2.8 2.8 0 0 1 15.88 24H3.48A2.8 2.8 0 0 1 .68 21.2V5.36h3.86ZM2.08 6.76v14.44c0 .77.62 1.4 1.4 1.4h12.4c.77 0 1.4-.63 1.4-1.4V6.76H2.08Z"/></svg>
+        </button>
+        <button class="burger" id="burger" aria-label="Menu" aria-expanded="false" aria-controls="nav">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero__media">
+      <video autoplay muted loop playsinline poster="https://images.pexels.com/videos/5234724/black-woman-doctor-psychologist-therapy-5234724.jpeg?auto=compress&cs=tinysrgb&fit=crop&h=630&w=1200">
+        <source src="https://videos.pexels.com/video-files/5234724/5234724-hd_1920_1080_25fps.mp4" type="video/mp4">
+      </video>
+    </div>
+    <div class="hero__inner">
+      <h1>Path Mentor</h1>
+      <p class="hero__sub">Experienced guidance for career, leadership, and life decisions.</p>
+      <div class="hero__cta">
+        <a class="btn btn-primary" href="#book">Book Now</a>
+        <a class="btn btn-ghost" href="#services">Explore Services</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Services -->
+  <section class="section" id="services">
+    <div class="wrap">
+      <div class="section-head center">
+        <span class="eyebrow">Our Services</span>
+        <h2>Personalized coaching for your path</h2>
+        <p>Personalized coaching to guide your growth and career path.</p>
+      </div>
+      <div class="cards">
+        <article class="card">
+          <div class="card__img"><img loading="lazy" src="https://images.unsplash.com/photo-1758273240403-052b3c99f636?auto=format&fit=crop&w=800&h=600" alt="Coach talking with a client on a couch"></div>
+          <div class="card__body">
+            <h6>One-on-One</h6>
+            <p>Tailored sessions to unlock your potential and clarify goals.</p>
+          </div>
+        </article>
+        <article class="card">
+          <div class="card__img"><img loading="lazy" src="https://images.unsplash.com/photo-1551836022-aadb801c60ae?auto=format&fit=crop&w=800&h=600" alt="A young professional reviewing career options with a mentor over coffee"></div>
+          <div class="card__body">
+            <h6>Career Help</h6>
+            <p>Guidance to navigate job changes and growth opportunities.</p>
+          </div>
+        </article>
+        <article class="card">
+          <div class="card__img"><img loading="lazy" src="https://images.unsplash.com/photo-1577563908411-5077b6dc7624?auto=format&fit=crop&w=800&h=600" alt="Notes and planning materials on a desk"></div>
+          <div class="card__body">
+            <h6>Life Planning</h6>
+            <p>Tools and advice to plan your life with confidence and clarity.</p>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Guiding Your Next Steps -->
+  <section class="section" id="about" style="background:#f7fafb">
+    <div class="wrap">
+      <div class="feature">
+        <div class="feature__body">
+          <span class="eyebrow">About Path Mentor</span>
+          <h2>Guiding Your Next Steps</h2>
+          <p class="muted" style="margin-top:14px;font-size:1.05rem">At Path Mentor, we walk alongside you to unlock clarity and confidence in your personal and career journey.</p>
+          <div class="feature__list">
+            <div class="feature__item">
+              <span class="dot" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M2 12h20"/></svg>
+              </span>
+              <div><h6>Personal Growth</h6><p>Build self-awareness and momentum with a plan that fits your life.</p></div>
+            </div>
+            <div class="feature__item">
+              <span class="dot" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg>
+              </span>
+              <div><h6>Career Focus</h6><p>Our tailored coaching helps you set meaningful goals and navigate challenges with practical strategies and support.</p></div>
+            </div>
+          </div>
+          <div style="margin-top:32px"><a class="btn btn-primary" href="#book">Start Your Journey</a></div>
+        </div>
+        <div class="feature__img">
+          <img loading="lazy" src="https://images.unsplash.com/photo-1640357557134-d911a08b374e?auto=format&fit=crop&w=1000&h=760" alt="A person on a sidewalk with the words 'life start' painted on it">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonial -->
+  <section class="section" id="testimonial">
+    <div class="wrap">
+      <figure class="quote">
+        <div class="stars" aria-hidden="true">★★★★★</div>
+        <blockquote>Path Mentor helped me find clarity and confidence in my career path.</blockquote>
+        <figcaption>
+          <img loading="lazy" src="https://images.unsplash.com/photo-1530575659297-ddeedb6dde9f?auto=format&fit=crop&w=96&h=96" alt="">
+          <span>J. Lee</span>
+        </figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- Contact / Booking -->
+  <section class="section" id="book" style="background:#f7fafb">
+    <div class="wrap">
+      <div class="contact">
+        <div class="contact__form">
+          <div class="section-head" style="margin-bottom:28px">
+            <span class="eyebrow">Get in Touch</span>
+            <h2>Book your session</h2>
+            <p>Questions or ready to book? We're here to help.</p>
+          </div>
+          <div class="form-panel">
+            <form id="bookingForm" novalidate>
+              <div class="field">
+                <label for="fullName">Your Name</label>
+                <input id="fullName" name="fullName" type="text" placeholder="Enter full name" autocomplete="name">
+              </div>
+              <div class="field">
+                <label for="email">Email Address *</label>
+                <input id="email" name="email" type="email" required placeholder="Enter your email" autocomplete="email">
+              </div>
+              <div class="field">
+                <label for="date">Preferred Date *</label>
+                <input id="date" name="date" type="date" required>
+              </div>
+              <button type="submit" class="btn btn-primary">Book Session</button>
+              <p class="form-success" id="formSuccess" role="status">Thanks! Your booking request has been noted — we'll confirm by email shortly.</p>
+              <p class="form-note">By booking you agree to be contacted about your session. We'll never share your details.</p>
+            </form>
+          </div>
+        </div>
+        <div class="contact__img">
+          <img loading="lazy" src="https://images.unsplash.com/photo-1577563908411-5077b6dc7624?auto=format&fit=crop&w=900&h=680" alt="Planning notes and ideas on a desk">
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- Footer -->
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div>
+        <h5>Contact</h5>
+        <p>Reach out anytime for support or questions.</p>
+        <div class="footer-social" aria-label="Social links">
+          <a href="https://www.instagram.com/path_mentor?igsh=MTZ2NWJmbnc2NTZrMw==&utm_source=qr" target="_blank" rel="noopener" aria-label="Instagram">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 5.85A6.15 6.15 0 1 0 12 18.15 6.15 6.15 0 0 0 12 5.85Zm0 10.15A4 4 0 1 1 12 8a4 4 0 0 1 0 8Zm7.84-10.4a1.44 1.44 0 1 1-1.44-1.44 1.44 1.44 0 0 1 1.44 1.44ZM23.92 7.05A6.86 6.86 0 0 0 21.98 2.02 6.86 6.86 0 0 0 16.95.09C14.97-.03 9.03-.03 7.05.09A6.86 6.86 0 0 0 2.02 2.02 6.86 6.86 0 0 0 .08 7.05C-.03 9.03-.03 14.97.08 16.95a6.86 6.86 0 0 0 1.94 5.03 6.86 6.86 0 0 0 5.03 1.93c1.98.12 7.92.12 9.9 0a6.86 6.86 0 0 0 5.03-1.93 6.86 6.86 0 0 0 1.94-5.03c.11-1.98.11-7.91 0-9.9Zm-2.56 12.02a4.05 4.05 0 0 1-2.28 2.28c-1.58.63-5.33.48-7.08.48s-5.5.14-7.07-.48a4.05 4.05 0 0 1-2.28-2.28c-.63-1.58-.48-5.33-.48-7.07s-.15-5.5.48-7.07A4.05 4.05 0 0 1 4.93 2.65C6.5 2.02 10.25 2.16 12 2.16s5.5-.14 7.08.49a4.05 4.05 0 0 1 2.28 2.28c.63 1.57.48 5.32.48 7.07s.15 5.5-.48 7.07Z"/></svg>
+          </a>
+          <a href="https://www.linkedin.com/in/ala-a-abdalla-mba-pmp%C2%AE-11b1a917/" target="_blank" rel="noopener" aria-label="LinkedIn">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.2 21H1.85V6.98H6.2V21ZM4.02 5.07A2.53 2.53 0 1 1 4.02 0a2.53 2.53 0 0 1 0 5.07ZM22.5 21h-4.35v-6.83c0-1.63-.03-3.71-2.26-3.71-2.27 0-2.61 1.77-2.61 3.6V21H8.93V6.98h4.17v1.91h.06c.58-1.1 2-2.26 4.12-2.26 4.4 0 5.22 2.9 5.22 6.67V21Z"/></svg>
+          </a>
+        </div>
+      </div>
+      <div>
+        <p class="footer-label">Email</p>
+        <p><a class="link" href="mailto:info@path-mentor.com">info@path-mentor.com</a></p>
+      </div>
+      <div>
+        <p class="footer-label">Stay in touch</p>
+        <form class="footer-sub" id="subscribeForm" novalidate>
+          <input type="text" name="name" placeholder="Enter name here" aria-label="Your full name" required>
+          <button type="submit" class="btn btn-primary">Book Now</button>
+        </form>
+      </div>
+    </div>
+    <div class="footer-bottom">© 2025 Path Mentor. All rights reserved.</div>
+  </div>
+</footer>
+
+<script>
+  // Mobile nav toggle
+  (function(){
+    var nav = document.getElementById('nav');
+    var burger = document.getElementById('burger');
+    burger.addEventListener('click', function(){
+      var open = nav.classList.toggle('open');
+      burger.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+    nav.querySelectorAll('.nav-links a').forEach(function(a){
+      a.addEventListener('click', function(){
+        nav.classList.remove('open');
+        burger.setAttribute('aria-expanded','false');
+      });
+    });
+  })();
+
+  // Booking form (client-side only until backend/booking calendar is wired in Phase 2/3)
+  (function(){
+    var form = document.getElementById('bookingForm');
+    var ok = document.getElementById('formSuccess');
+    form.addEventListener('submit', function(e){
+      e.preventDefault();
+      if(!form.checkValidity()){ form.reportValidity(); return; }
+      ok.classList.add('show');
+      form.querySelector('button[type=submit]').textContent = 'Request sent';
+    });
+    document.getElementById('subscribeForm').addEventListener('submit', function(e){
+      e.preventDefault();
+      if(!this.checkValidity()){ this.reportValidity(); return; }
+      this.querySelector('button').textContent = 'Thanks!';
+    });
+  })();
+</script>
+</body>
+</html>
