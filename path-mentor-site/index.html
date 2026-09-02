@@ -143,6 +143,20 @@
   .card__body h6{margin-bottom:10px}
   .card__body p{color:var(--muted)}
 
+  /* ---------- Services (numbered) ---------- */
+  .svc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:28px}
+  .svc{
+    background:#fff;border:1px solid var(--line);border-radius:var(--radius);
+    padding:34px 30px;box-shadow:var(--shadow-sm);
+    transition:transform var(--ease),box-shadow var(--ease);
+    border-top:3px solid var(--teal);
+  }
+  .svc:hover{transform:translateY(-4px);box-shadow:var(--shadow-md)}
+  .svc__num{font-size:2.4rem;font-weight:600;line-height:1;color:var(--teal);letter-spacing:-.02em;margin-bottom:16px}
+  .svc__title{font-size:1.4rem;margin-bottom:12px}
+  .svc__lead{font-weight:600;color:var(--ink);margin-bottom:12px;line-height:1.4}
+  .svc__desc{color:var(--muted);font-size:.98rem;line-height:1.6}
+
   /* ---------- Feature / Guiding section ---------- */
   .feature{display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center}
   .feature__img img{border-radius:var(--radius-lg);box-shadow:var(--shadow-md);width:100%;object-fit:cover}
@@ -199,6 +213,7 @@
     .feature,.contact{grid-template-columns:1fr;gap:32px}
     .contact__img{order:-1}
     .cards{grid-template-columns:1fr 1fr}
+    .svc-grid{grid-template-columns:1fr}
     .footer-grid{grid-template-columns:1fr 1fr}
   }
   @media (max-width:720px){
@@ -234,7 +249,6 @@
       <ul class="nav-links">
         <li><a href="#top" aria-current="page">Home</a></li>
         <li><a href="#services">Services</a></li>
-        <li><a href="#book">Bookings</a></li>
         <li><a href="#about">About</a></li>
         <li><a href="#book">Path Planner</a></li>
       </ul>
@@ -282,30 +296,27 @@
     <div class="wrap">
       <div class="section-head center">
         <span class="eyebrow">Our Services</span>
-        <h2>Personalized coaching for your path</h2>
-        <p>Personalized coaching to guide your growth and career path.</p>
+        <h2>What we do</h2>
+        <p>Practical, people-centered support across training, consulting, and mentoring.</p>
       </div>
-      <div class="cards">
-        <article class="card">
-          <div class="card__img"><img loading="lazy" src="https://images.unsplash.com/photo-1758273240403-052b3c99f636?auto=format&fit=crop&w=800&h=600" alt="Coach talking with a client on a couch"></div>
-          <div class="card__body">
-            <h6>One-on-One</h6>
-            <p>Tailored sessions to unlock your potential and clarify goals.</p>
-          </div>
+      <div class="svc-grid">
+        <article class="svc">
+          <div class="svc__num">01</div>
+          <h3 class="svc__title">Training &amp; Facilitation</h3>
+          <p class="svc__lead">Practical, interactive learning experiences designed around real business needs.</p>
+          <p class="svc__desc">We deliver customized training and workshops across Leadership, Communication, Change Management, Performance, Strategy, Team Effectiveness, and Innovation. Our methodologies include LEGO® Serious Play®, Design Thinking, experiential learning, and interactive facilitation.</p>
         </article>
-        <article class="card">
-          <div class="card__img"><img loading="lazy" src="https://images.unsplash.com/photo-1551836022-aadb801c60ae?auto=format&fit=crop&w=800&h=600" alt="A young professional reviewing career options with a mentor over coffee"></div>
-          <div class="card__body">
-            <h6>Career Help</h6>
-            <p>Guidance to navigate job changes and growth opportunities.</p>
-          </div>
+        <article class="svc">
+          <div class="svc__num">02</div>
+          <h3 class="svc__title">Consulting</h3>
+          <p class="svc__lead">Turning organizational challenges into practical, people-centered solutions.</p>
+          <p class="svc__desc">We support organizations across Organizational Development, Learning &amp; Development, People &amp; Performance, Capability Building, and Change &amp; Transformation.</p>
         </article>
-        <article class="card">
-          <div class="card__img"><img loading="lazy" src="https://images.unsplash.com/photo-1577563908411-5077b6dc7624?auto=format&fit=crop&w=800&h=600" alt="Notes and planning materials on a desk"></div>
-          <div class="card__body">
-            <h6>Life Planning</h6>
-            <p>Tools and advice to plan your life with confidence and clarity.</p>
-          </div>
+        <article class="svc">
+          <div class="svc__num">03</div>
+          <h3 class="svc__title">Mentoring</h3>
+          <p class="svc__lead">Helping people gain clarity, build confidence, and move forward.</p>
+          <p class="svc__desc">One-to-one mentoring conversations designed to support leadership growth, professional development, career direction, and personal effectiveness.</p>
         </article>
       </div>
     </div>
