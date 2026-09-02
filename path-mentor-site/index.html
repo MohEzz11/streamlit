@@ -157,6 +157,20 @@
   .svc__lead{font-weight:600;color:var(--ink);margin-bottom:12px;line-height:1.4}
   .svc__desc{color:var(--muted);font-size:.98rem;line-height:1.6}
 
+  /* ---------- Free download (code-gated) ---------- */
+  .dl{display:grid;grid-template-columns:.8fr 1.2fr;gap:48px;align-items:center}
+  .dl__media img{border-radius:var(--radius);box-shadow:var(--shadow-lg);width:100%;max-width:320px;margin-inline:auto}
+  .dl__lead{color:rgba(255,255,255,.85);font-size:1.05rem;margin:14px 0 24px;max-width:560px}
+  .dl__form{display:flex;gap:12px;flex-wrap:wrap;max-width:520px}
+  .dl__form input{
+    flex:1 1 240px;font-family:var(--font);font-size:1rem;color:var(--ink);
+    background:#fff;border:1px solid transparent;border-radius:var(--pill);padding:14px 22px;
+  }
+  .dl__form input:focus{outline:none;box-shadow:0 0 0 3px rgba(191,224,234,.5)}
+  .dl__msg{margin-top:16px;font-weight:500;max-width:520px}
+  .dl__msg.err{color:#ffc2d3}
+  .dl__msg.ok{color:#8fe3c9}
+
   /* ---------- Feature / Guiding section ---------- */
   .feature{display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center}
   .feature__img img{border-radius:var(--radius-lg);box-shadow:var(--shadow-md);width:100%;object-fit:cover}
@@ -214,6 +228,7 @@
     .contact__img{order:-1}
     .cards{grid-template-columns:1fr 1fr}
     .svc-grid{grid-template-columns:1fr}
+    .dl{grid-template-columns:1fr;gap:28px}
     .footer-grid{grid-template-columns:1fr 1fr}
   }
   @media (max-width:720px){
@@ -250,6 +265,7 @@
         <li><a href="#top" aria-current="page">Home</a></li>
         <li><a href="#services">Services</a></li>
         <li><a href="#about">About</a></li>
+        <li><a href="#download">Free Guide</a></li>
         <li><a href="#book">Path Planner</a></li>
       </ul>
       <div class="nav-actions">
@@ -367,6 +383,27 @@
     </div>
   </section>
 
+  <!-- Free download (code-gated) -->
+  <section class="section" id="download" style="background:var(--slate);color:#fff">
+    <div class="wrap">
+      <div class="dl">
+        <div class="dl__media">
+          <img loading="lazy" src="https://cdn.zyrosite.com/cdn-ecommerce/store_01KC0YEKSM4V6NECWYHVWGF3RX/assets/800f72aa-f113-4b77-92ed-4dfdb952ba85.png" alt="Facilitate With Confidence — planning & reflection journal cover">
+        </div>
+        <div class="dl__body">
+          <span class="eyebrow" style="color:#bfe0ea">Free resource</span>
+          <h2 style="color:#fff">Facilitate With Confidence</h2>
+          <p class="dl__lead">A practical planning &amp; reflection journal for new and early-career workshop facilitators, trainers, and L&amp;D professionals. Enter your code to download it free.</p>
+          <form id="dlForm" class="dl__form" novalidate>
+            <input id="dlCode" type="text" placeholder="Enter your code (e.g. PATHFREE)" aria-label="Discount code" autocomplete="off">
+            <button type="submit" class="btn btn-primary">Unlock download</button>
+          </form>
+          <p id="dlMsg" class="dl__msg" role="status" hidden></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- Contact / Booking -->
   <section class="section" id="book" style="background:#f7fafb">
     <div class="wrap">
@@ -469,6 +506,30 @@
       e.preventDefault();
       if(!this.checkValidity()){ this.reportValidity(); return; }
       this.querySelector('button').textContent = 'Thanks!';
+    });
+  })();
+
+  // Code-gated free download
+  (function(){
+    var form = document.getElementById('dlForm');
+    if(!form) return;
+    var msg = document.getElementById('dlMsg');
+    var VALID = ['PATHFREE'];                         // accepted codes (case-insensitive)
+    var FILE = 'assets/facilitate-with-confidence.pdf'; // place the PDF here
+    form.addEventListener('submit', function(e){
+      e.preventDefault();
+      var code = document.getElementById('dlCode').value.trim().toUpperCase();
+      msg.hidden = false;
+      if(VALID.indexOf(code) !== -1){
+        msg.textContent = 'Success — your download is starting. Thank you!';
+        msg.className = 'dl__msg ok';
+        var a = document.createElement('a');
+        a.href = FILE; a.download = 'Facilitate-With-Confidence.pdf';
+        document.body.appendChild(a); a.click(); a.remove();
+      } else {
+        msg.textContent = 'That code isn’t valid. Please check and try again.';
+        msg.className = 'dl__msg err';
+      }
     });
   })();
 </script>
