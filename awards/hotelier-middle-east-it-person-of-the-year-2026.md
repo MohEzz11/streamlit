@@ -3,6 +3,7 @@
 ### Nomination Entry: AI, Automation and Cost Resilience Programme
 
 **Nominee:** Mohamed Ezzeldin, IT Manager
+**Qualification:** MBA (Business Analytics and Strategic Management), Heriot-Watt University, Edinburgh Business School
 **Property:** [CONFIRM: Property name], Abu Dhabi (200 keys)
 **Group:** IHG Hotels and Resorts
 **Entry period:** January to December 2026
@@ -25,6 +26,8 @@ Do not submit this entry with any `[CONFIRM]` marker still open. Judges at Hotel
 ## 1. EXECUTIVE ENTRY SUMMARY
 
 In 2026 the IT function at this 200 key Abu Dhabi property stopped being a support cost and became a measurable contributor to profit, operational capacity and guest satisfaction. Four platforms were conceived, designed, built and deployed in house by the IT Manager, with no external development spend and no capital investment approval required. In parallel, a regional conflict that disrupted supply chains, connectivity and vendor pricing across the Gulf was converted from a cost shock into a structured cost reduction programme covering suppliers, connectivity and application licensing.
+
+Each of these outcomes was framed as a commercial decision before it was framed as a technical one, a discipline drawn directly from the MBA in Business Analytics and Strategic Management completed at Heriot-Watt University while holding a full time IT Manager role at an operating property.
 
 The result is a single integrated digital ecosystem rather than a portfolio of disconnected pilots. Autonomous service delivery, real time business intelligence, intelligent guest validation and digital stewarding operations feed one another and one reporting layer, which means every hour saved and every dirham avoided is visible to the General Manager on the same dashboard the next morning.
 
@@ -58,6 +61,7 @@ Collectively the programme delivered measurable business outcomes across the hot
 - Protected the P&L through a 2026 crisis response programme delivering `[CONFIRM: AED __]` in supplier, connectivity and licensing savings without a single reduction in guest facing service standards
 - Delivered four enterprise grade platforms with **zero capital expenditure** and **zero external development spend**
 - Established a scalable innovation framework now adopted by InterContinental Abu Dhabi, with a second IHG property progressing to implementation
+- Completed an MBA in Business Analytics and Strategic Management at Heriot-Watt University while delivering the full programme in role, applying investment appraisal, strategic sourcing and cost of quality discipline to every initiative in this entry
 
 ---
 
@@ -245,7 +249,46 @@ The defining point of this section for judges is the combination: cost was remov
 
 ---
 
-## 8. LEADERSHIP, GOVERNANCE AND SCALABILITY
+## 8. ACADEMIC FOUNDATION: MBA, HERIOT-WATT UNIVERSITY
+
+**Qualification:** Master of Business Administration, Heriot-Watt University, Edinburgh Business School
+**Specialisation:** Business Analytics and Strategic Management
+**Status:** Graduated `[CONFIRM: month and year]`
+
+### Why this belongs in a technology award entry
+
+The programme described in this entry was not delivered by technical capability alone. Every initiative in it began with a commercial question rather than a technical one, and that shift is directly attributable to the MBA completed at Heriot-Watt University alongside a full time IT Manager role at an operating 200 key property.
+
+The qualification changed the operating question from **"can we build this"** to **"what does this return, what does it cost across its full life, what breaks if it fails, and what is the next best use of the same money and hours."** That is the difference between an IT Manager who delivers projects and one who is accountable for business outcomes, and it is the reason this entry can be argued in dirhams rather than in features.
+
+### Where the MBA is visible in the work
+
+| Initiative | Discipline applied | Evidence in this entry |
+|---|---|---|
+| Service robot programme | Total cost of ownership, investment appraisal, contract and risk analysis | Fully loaded human cost comparison including visa, accommodation, insurance, annual leave, end of service and recruitment, rather than a salary against a subscription price. Formal concerns register and Finance sign off before commitment |
+| Executive BI platform | Business analytics, management accounting, decision support theory | Built around the decisions the executive team actually makes on occupancy, ADR, RevPAR and forecast, not around the data that happened to be available |
+| F&B Assist | Revenue management, margin protection, internal control | Framed as controlling revenue leakage and creating an audit trail, not as replacing a printed guest list |
+| Stewarding App | Cost of quality, variance analysis, operational costing | Targets the specific P&L lines of breakage, chemical consumption and casual labour, with before and after measurement designed in from the start |
+| 2026 crisis response | Strategic sourcing, supplier negotiation, scenario planning, working capital management | A governed contract register assessed on criticality, exit terms, currency exposure and substitutability, rather than reactive across the board cuts |
+| Estate wide scalability | Strategic management, business case portability | Business case structured so a second and third property can adopt it without rebuilding the argument, which is why InterContinental Abu Dhabi was able to adopt it directly |
+
+### The strategic mindset in practice
+
+Three specific habits carried from the MBA into the operation:
+
+1. **Cost is measured across the full life, not at the point of purchase.** The robot comparison holds up under scrutiny precisely because it counts visa, accommodation, insurance, end of service and recruitment on the human side and contract, support and downtime on the technology side. A sticker price comparison would have produced a weaker and less defensible case.
+
+2. **Every initiative is designed with its own measurement.** Baselines were captured before deployment in every case: report preparation time before automation, validation time before F&B Assist, breakage and chemical cost before the Stewarding App, contract values before renegotiation. This is why this entry contains before and after evidence rather than assertions, and it is a deliberate design decision taken at the outset, not a reconstruction after the fact.
+
+3. **Risk is registered, priced and escalated, not absorbed quietly.** The concerns register handed to Finance before the robot commitment, and the four criteria applied to the supplier contract register during the 2026 conflict, both come from the same discipline: name the exposure, quantify it, and put the decision in front of the person accountable for it.
+
+### Continuing contribution
+
+The combination of an operating IT leadership role and formal business education is now applied beyond the property. The nominee delivers professional training in project management, PRINCE2, PMP preparation, leadership and technology, and structures every hotel initiative to the same standard expected of PMI and PRINCE2 practice, which is why the robot business case transferred to a second IHG property without modification.
+
+---
+
+## 9. LEADERSHIP, GOVERNANCE AND SCALABILITY
 
 - **Commercial discipline before technical enthusiasm.** The robot programme was subjected to contract review, a formal concerns register and Finance sign off before any commitment. No initiative in the programme proceeded on the basis of novelty.
 - **Evidence based decision making.** Every claim in this entry traces to a system generated record: the robot performance dashboard, Power BI, Medallia, the supplier contract register and the Finance P&L extracts.
@@ -256,7 +299,7 @@ The defining point of this section for judges is the combination: cost was remov
 
 ---
 
-## 9. EVIDENCE PACK TO SUBMIT WITH THE ENTRY
+## 10. EVIDENCE PACK TO SUBMIT WITH THE ENTRY
 
 1. Robot performance dashboard export, 5 to 29 June 2026 (1,135 deliveries, 94 hours, 37.4 km, 99.8% completion)
 2. Robot vendor contract and concerns register, with Finance sign off
@@ -269,10 +312,11 @@ The defining point of this section for judges is the combination: cost was remov
 9. Software subscription audit showing cancelled and replaced licences
 10. Written endorsement from the General Manager, Director of Finance and Executive Chef
 11. Confirmation of adoption from InterContinental Abu Dhabi
+12. MBA certificate and transcript, Heriot-Watt University, Edinburgh Business School
 
 ---
 
-## 10. INFORMATION REQUIRED TO COMPLETE THIS ENTRY
+## 11. INFORMATION REQUIRED TO COMPLETE THIS ENTRY
 
 Request these in one email each to Finance, Procurement, HR and F&B. Priority 1 items carry the most weight with judges.
 
@@ -291,12 +335,14 @@ Request these in one email each to Finance, Procurement, HR and F&B. Priority 1 
 | 11 | System availability and guest internet uptime during the crisis period | IT | 2 |
 | 12 | Medallia score movement across the crisis period | Quality | 2 |
 | 13 | Number of IHG properties in scope for estate wide rollout | Regional IT | 3 |
+| 14 | MBA graduation month and year, plus certificate copy | Nominee | 1 |
 
 ---
 
-## 11. SUBMISSION NOTES
+## 12. SUBMISSION NOTES
 
 - Hotelier Middle East entries are typically word limited per section. If a limit applies, submit Section 1 (Executive Entry Summary) and Section 2 (Programme Impact) as the entry body, and attach Sections 3 to 8 as the supporting document.
 - Lead with the Stewarding App and the crisis response if the category emphasis is business impact, and lead with the robot programme if the emphasis is innovation.
 - Every percentage claim should be paired with the absolute dirham value. Judges discount percentages presented alone.
+- Pair the MBA with the delivery record rather than listing it as a credential. The point that lands with judges is not that the degree exists, it is that a 200 key property gained four platforms and a governed crisis response from someone applying that education in role while studying for it.
 - State clearly that all four platforms were built in house by the nominee. That is the single strongest differentiator in this category, because most competing entries describe a vendor implementation that the nominee managed rather than a solution the nominee created.
