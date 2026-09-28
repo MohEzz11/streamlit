@@ -1,0 +1,7 @@
+# Heygen Passport runtime data (never commit real hotel records)
+heygen_passport/data/
+*.db
+*.db-wal
+*.db-shm
+__pycache__/
+.pytest_cache/
