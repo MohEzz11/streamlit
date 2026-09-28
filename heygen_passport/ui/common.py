@@ -3,7 +3,6 @@ wrapper that always tells the user whether something was recorded."""
 
 import datetime as dt
 import html
-import sqlite3
 
 import pandas as pd
 import streamlit as st
@@ -90,11 +89,11 @@ def save(fn, *args, success="Saved.", rerun=True, **kwargs):
     except (ValidationError, PermissionDenied) as e:
         st.error(f"NOT saved: {e}")
         return None
-    except sqlite3.OperationalError as e:
+    except db.OperationalError as e:
         st.error(f"NOT saved: the database is busy or unavailable ({e}). Your entry is still on screen - "
                  "please try again.")
         return None
-    except sqlite3.IntegrityError as e:
+    except db.IntegrityError as e:
         st.error(f"NOT saved: the data conflicts with an existing record ({e}).")
         return None
     except Exception as e:  # noqa: BLE001 - never hide a failed save

@@ -9,7 +9,6 @@ from . import common as ui
 
 
 def page():
-    a = ui.actor()
     st.header("Expiry tracking")
     ui.flash_show()
     st.caption("Follow the hotel's approved food-safety procedures. Each category has its own reminder period and "

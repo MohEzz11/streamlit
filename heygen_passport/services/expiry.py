@@ -10,7 +10,7 @@ import datetime as dt
 
 from .. import audit
 from ..db import row, rows, transaction, utcnow
-from ..permissions import PermissionDenied, dept_scope, has, require
+from ..permissions import dept_scope, require
 from ..security import ValidationError, clean_text
 from .actions import _insert_ca
 from .common import parse_date, store_evidence, today_local

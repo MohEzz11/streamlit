@@ -4,7 +4,7 @@ completion and supervisor verification."""
 import datetime as dt
 
 from .. import audit
-from ..db import row, rows, scalar, transaction, utcnow
+from ..db import insert_if_absent, row, rows, scalar, transaction, utcnow
 from ..permissions import PermissionDenied, dept_scope, has, require
 from ..security import ValidationError, clean_text
 from .actions import _insert_ca
@@ -229,16 +229,17 @@ def generate_duties(conn, day=None, actor=None):
             for it in items:
                 due_at = local_to_utc_iso(conn, day, it["due_time"] or "23:59")
                 win = (dt.datetime.fromisoformat(due_at) - dt.timedelta(minutes=it["window_minutes"])).isoformat()
-                cur = conn.execute(
-                    """INSERT OR IGNORE INTO hp_duties(schedule_id, template_item_id, duty_date, department_id,
-                           outlet_id, job_title, shift, assigned_staff_id, title, instructions, response_type,
-                           min_value, max_value, unit, priority, risk_level, requires_verification, due_at,
-                           window_start_at, reg_source_id, reg_clause, created_at, created_by)
-                       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
-                    (sc["id"], it["id"], iso, sc["department_id"], sc["outlet_id"], sc["job_title"], sc["shift"],
-                     sc["assigned_staff_id"], it["title"], it["instructions"], it["response_type"], it["min_value"],
-                     it["max_value"], it["unit"], it["priority"], it["risk_level"], it["requires_verification"],
-                     due_at, win, it["reg_source_id"], it["reg_clause"], utcnow(), getattr(actor, "user_id", None)))
+                cur = insert_if_absent(conn, "hp_duties", {
+                    "schedule_id": sc["id"], "template_item_id": it["id"], "duty_date": iso,
+                    "department_id": sc["department_id"], "outlet_id": sc["outlet_id"], "job_title": sc["job_title"],
+                    "shift": sc["shift"], "assigned_staff_id": sc["assigned_staff_id"], "title": it["title"],
+                    "instructions": it["instructions"], "response_type": it["response_type"],
+                    "min_value": it["min_value"], "max_value": it["max_value"], "unit": it["unit"],
+                    "priority": it["priority"], "risk_level": it["risk_level"],
+                    "requires_verification": it["requires_verification"], "due_at": due_at, "window_start_at": win,
+                    "reg_source_id": it["reg_source_id"], "reg_clause": it["reg_clause"], "created_at": utcnow(),
+                    "created_by": getattr(actor, "user_id", None)},
+                    ["schedule_id", "template_item_id", "duty_date", "assigned_staff_id"])
                 created += cur.rowcount
         if created:
             audit.log(conn, actor, "duty.generate", "duty", None, None, date=iso, created=created)

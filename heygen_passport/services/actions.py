@@ -81,7 +81,7 @@ def list_corrective_actions(conn, actor, status=None, department_id=None, staff_
         sql += " AND ca.status IN ('open','in_progress')"
     out = rows(conn, sql + """ ORDER BY CASE ca.status WHEN 'open' THEN 0 WHEN 'in_progress' THEN 1 ELSE 2 END,
                                CASE ca.severity WHEN 'critical' THEN 0 WHEN 'high' THEN 1 WHEN 'medium' THEN 2 ELSE 3 END,
-                               ca.due_date IS NULL, ca.due_date""", params)
+                               CASE WHEN ca.due_date IS NULL THEN 1 ELSE 0 END, ca.due_date""", params)
     today = today_local(conn).isoformat()
     for ca in out:
         ca["is_overdue"] = bool(ca["status"] in ("open", "in_progress") and ca["due_date"] and ca["due_date"] < today)

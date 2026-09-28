@@ -1,13 +1,16 @@
 """UI smoke tests: sign in as each role and render every page it can reach."""
 
-import os
+import uuid
 from pathlib import Path
 
 import pytest
 from streamlit.testing.v1 import AppTest
 
 from heygen_passport import config, db, seed
+from heygen_passport.security import hash_password
 from heygen_passport.services import users
+
+from .conftest import ENGINES
 
 APP = str(Path(__file__).resolve().parents[1] / "app.py")
 PW = "Str0ng#Password"
@@ -23,29 +26,38 @@ PAGES = {
 }
 
 
-@pytest.fixture(scope="module")
-def dbpath(tmp_path_factory):
-    path = tmp_path_factory.mktemp("ui") / "ui.db"
-    old = config.DB_PATH
-    config.DB_PATH = path
-    conn = db.connect(path)
+@pytest.fixture(scope="module", params=ENGINES)
+def dbpath(request, tmp_path_factory):
+    """Prepare a seeded database on each engine; the app under test reads
+    the same config module, so it connects to this database."""
+    saved = (config.DB_ENGINE, config.DB_PATH, config.MSSQL_DATABASE)
+    if request.param == "sqlite":
+        config.DB_ENGINE, config.DB_PATH = "sqlite", tmp_path_factory.mktemp("ui") / "ui.db"
+    else:
+        config.DB_ENGINE, config.MSSQL_DATABASE = "mssql", f"hp_uitest_{uuid.uuid4().hex[:10]}"
+        db.create_mssql_database(config.MSSQL_DATABASE)
+    conn = db.connect()
     db.migrate_up(conn)
     seed.init_reference_data(conn)
     seed.seed_demo(conn)
     for name, role, staff_emp in (("t.staff", "staff", "DEMO-K002"), ("t.sup", "supervisor", "DEMO-K001"),
                                   ("t.mgr", "manager", None), ("t.admin", "admin", None)):
         sid = db.scalar(conn, "SELECT id FROM hp_staff WHERE employee_id=?", (staff_emp,)) if staff_emp else None
-        # Demo staff already have accounts; reuse their profile via a fresh password.
+        # Demo staff already have accounts; reuse them with a known password.
         existing = db.scalar(conn, "SELECT id FROM hp_users WHERE staff_id=?", (sid,)) if sid else None
         if existing:
-            conn.execute("UPDATE hp_users SET username=? WHERE id=?", (name, existing))
-            conn.execute("UPDATE hp_users SET password_hash=? WHERE id=?",
-                         (__import__("heygen_passport.security", fromlist=["x"]).hash_password(PW), existing))
+            conn.execute("UPDATE hp_users SET username=?, password_hash=? WHERE id=?",
+                         (name, hash_password(PW), existing))
         else:
             users.create_user(conn, None, name, PW, role, must_change_password=False)
     conn.close()
-    yield path
-    config.DB_PATH = old
+    yield request.param
+    if request.param == "mssql":
+        master = db.pyodbc.connect(db.mssql_connection_string("master"), autocommit=True)
+        master.cursor().execute(f"ALTER DATABASE [{config.MSSQL_DATABASE}] SET SINGLE_USER WITH ROLLBACK "
+                                f"IMMEDIATE; DROP DATABASE [{config.MSSQL_DATABASE}]")
+        master.close()
+    config.DB_ENGINE, config.DB_PATH, config.MSSQL_DATABASE = saved
 
 
 def _login(username):

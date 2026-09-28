@@ -214,10 +214,12 @@ def set_field_value(conn, actor, staff_id, field_id, value):
     if (old or {}).get("value") == value:
         return
     with transaction(conn):
-        conn.execute("""INSERT INTO hp_staff_field_values(staff_id, field_id, value, updated_at, updated_by)
-                        VALUES (?,?,?,?,?) ON CONFLICT(staff_id, field_id) DO UPDATE SET
-                        value=excluded.value, updated_at=excluded.updated_at, updated_by=excluded.updated_by""",
-                     (staff_id, field_id, value, utcnow(), actor.user_id))
+        if old:
+            conn.execute("""UPDATE hp_staff_field_values SET value=?, updated_at=?, updated_by=?
+                            WHERE staff_id=? AND field_id=?""", (value, utcnow(), actor.user_id, staff_id, field_id))
+        else:
+            conn.execute("""INSERT INTO hp_staff_field_values(staff_id, field_id, value, updated_at, updated_by)
+                            VALUES (?,?,?,?,?)""", (staff_id, field_id, value, utcnow(), actor.user_id))
         audit.log(conn, actor, "staff.field_update", "staff", staff_id, s["department_id"],
                   field=f["label"], old=(old or {}).get("value"), new=value)
 
@@ -255,7 +257,7 @@ def certifications(conn, actor, staff_id=None, department_id=None, status=None):
     if department_id:
         sql += " AND s.department_id=?"
         params.append(department_id)
-    out = rows(conn, sql + " ORDER BY c.expiry_date IS NULL, c.expiry_date", params)
+    out = rows(conn, sql + " ORDER BY CASE WHEN c.expiry_date IS NULL THEN 1 ELSE 0 END, c.expiry_date", params)
     for c in out:
         c["status"] = cert_status(conn, c["expiry_date"])
     if status:

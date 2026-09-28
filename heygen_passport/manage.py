@@ -1,6 +1,7 @@
 """Heygen Passport management commands.
 
-    python -m heygen_passport.manage init            # migrate + reference data
+    python -m heygen_passport.manage check           # test the SQL Server connection
+    python -m heygen_passport.manage init            # create the database if missing, migrate, reference data
     python -m heygen_passport.manage create-admin    # first administrator (prompts)
     python -m heygen_passport.manage create-user --role manager
     python -m heygen_passport.manage migrate
@@ -35,6 +36,7 @@ def _password(args):
 def main(argv=None):
     p = argparse.ArgumentParser(prog="heygen_passport.manage")
     sub = p.add_subparsers(dest="cmd", required=True)
+    sub.add_parser("check")
     sub.add_parser("migrate")
     rb = sub.add_parser("rollback")
     rb.add_argument("--confirm", action="store_true")
@@ -51,15 +53,32 @@ def main(argv=None):
     sub.add_parser("status")
     args = p.parse_args(argv)
 
-    conn = db.connect()
-    print(f"Database: {config.DB_PATH}")
+    if config.DB_ENGINE == "mssql":
+        print(f"Database: SQL Server '{config.MSSQL_SERVER}', database '{config.MSSQL_DATABASE}' "
+              f"({'SQL login ' + config.MSSQL_USER if config.MSSQL_USER else 'Windows authentication'})")
+        if args.cmd in ("init", "check"):
+            try:
+                created = db.create_mssql_database()
+            except Exception as e:  # noqa: BLE001 - show the driver's own message
+                print(f"Cannot reach SQL Server or create the database: {e}")
+                return 1
+            print("Created new database." if created else "Database already exists (left as is).")
+    else:
+        print(f"Database: SQLite file {config.DB_PATH} (demo/test mode)")
     try:
-        if args.cmd == "migrate":
+        conn = db.connect()
+    except Exception as e:  # noqa: BLE001
+        print(f"Cannot connect to the database: {e}")
+        return 1
+    try:
+        if args.cmd == "check":
+            print("Connection OK. Applied migrations:", sorted(db.applied_versions(conn)) or "none yet (run init)")
+        elif args.cmd == "migrate":
             print("Applied:", db.migrate_up(conn) or "nothing (up to date)")
         elif args.cmd == "rollback":
             if not args.confirm:
                 print("Rollback drops the latest migration's hp_ tables. Re-run with --confirm. "
-                      "A backup copy is taken first.")
+                      "A backup is taken first (SQL Server: set HEYGEN_MSSQL_BACKUP_DIR).")
                 return 1
             version, bak = db.migrate_down(conn)
             print(f"Rolled back {version}. Backup: {bak}")
