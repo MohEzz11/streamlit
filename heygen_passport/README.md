@@ -55,6 +55,48 @@ Then sign in as the administrator and:
 4. Review the starter checklists (**Checklists**), then create **Assignments** that link templates to a department, outlet, role, shift, days and, optionally, a responsible person.
 5. Schedule `python -m heygen_passport.manage daily` once a day at about 00:05 hotel time (Windows Task Scheduler, starting in the repository folder). It creates the day's duties and raises alerts. Dashboards also do this automatically when opened.
 
+## Alternative: run in Docker Desktop
+
+The app runs in a container, while the data stays in the SQL Server installed on your PC. The container stores nothing, so you can rebuild or remove it without losing data.
+
+**One-time SQL Server preparation** (in SQL Server Configuration Manager and SSMS):
+
+1. Enable **TCP/IP** for your instance and give it a fixed port (for example 1433). SQL Server Express has TCP/IP disabled and uses a dynamic port by default. Restart the SQL Server service afterwards.
+2. Enable **SQL Server and Windows Authentication mode** (Server Properties > Security). A Linux container cannot use Windows authentication.
+3. Edit `heygen_passport\docker\create_login.sql`, replacing the placeholder password with your own, and run it in SSMS as an administrator. It creates the `HeygenPassport` database and a `heygen_app` login that can only use that database.
+4. If Windows Firewall is on, allow inbound TCP 1433 from the local machine or Docker network.
+
+**Start Heygen Passport:**
+
+```bat
+copy heygen_passport\local.env.example heygen_passport\local.env
+notepad heygen_passport\local.env
+```
+
+In `local.env`, set these three values:
+
+```
+HEYGEN_MSSQL_SERVER=host.docker.internal,1433
+HEYGEN_MSSQL_USER=heygen_app
+HEYGEN_MSSQL_PASSWORD=<the password from step 3>
+```
+
+Then:
+
+```bat
+docker compose -f heygen_passport\docker-compose.yml up -d --build
+docker compose -f heygen_passport\docker-compose.yml run --rm heygen python -m heygen_passport.manage create-admin
+```
+
+Open <http://localhost:8502>. Other useful commands:
+
+* `docker compose -f heygen_passport\docker-compose.yml logs -f heygen` shows the logs.
+* `docker compose -f heygen_passport\docker-compose.yml down` stops the app; your data stays in SQL Server.
+* `docker compose -f heygen_passport\docker-compose.yml up -d --build` updates the app after a `git pull`.
+* `docker compose -f heygen_passport\docker-compose.yml run --rm heygen python -m heygen_passport.manage daily` runs the daily job from Task Scheduler.
+
+The container restarts automatically with Docker Desktop (`restart: unless-stopped`). It runs as a non-root user and reports its health to Docker.
+
 ### Demo data (optional, for training only)
 
 ```bat
