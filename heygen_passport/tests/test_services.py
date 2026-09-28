@@ -3,7 +3,7 @@ import os
 
 import pytest
 
-from heygen_passport import db, seed
+from heygen_passport import config, db, seed
 from heygen_passport.permissions import PermissionDenied
 from heygen_passport.security import ValidationError
 from heygen_passport.services import (actions, alerts, checklists as ck, common, expiry as ex, scoring as sc,
@@ -13,8 +13,8 @@ PW = "Str0ng#Password"
 
 
 @pytest.fixture()
-def env(tmp_path):
-    conn = db.connect(tmp_path / "t.db")
+def env(fresh_conn):
+    conn = fresh_conn
     db.migrate_up(conn)
     seed.init_reference_data(conn)
     seed.seed_demo(conn)
@@ -30,14 +30,20 @@ def _ids(conn):
     return {r["employee_id"]: r["id"] for r in db.rows(conn, "SELECT id, employee_id FROM hp_staff")}
 
 
-def test_migration_up_down_up(tmp_path):
-    path = tmp_path / "m.db"
-    conn = db.connect(path)
+def test_migration_up_down_up(fresh_conn, monkeypatch):
+    conn = fresh_conn
+    if conn.dialect == "mssql":
+        monkeypatch.setattr(config, "MSSQL_BACKUP_DIR", os.environ.get("HEYGEN_TEST_MSSQL_BACKUP_DIR",
+                                                                       "/var/opt/mssql/data"))
     assert db.migrate_up(conn) == ["0001"]
     assert db.migrate_up(conn) == []
-    version, bak = db.migrate_down(conn, path)
-    assert version == "0001" and bak.exists()
-    assert not db.rows(conn, "SELECT name FROM sqlite_master WHERE name LIKE 'hp_staff'")
+    version, bak = db.migrate_down(conn)
+    assert version == "0001" and bak
+    if conn.dialect == "sqlite":
+        assert bak.exists()
+    assert db.scalar(conn, "SELECT COUNT(*) FROM hp_schema_migrations") == 0
+    with pytest.raises(Exception):
+        conn.execute("SELECT COUNT(*) FROM hp_staff")
     assert db.migrate_up(conn) == ["0001"]
 
 

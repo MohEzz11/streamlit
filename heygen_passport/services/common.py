@@ -12,13 +12,13 @@ from ..security import ValidationError, clean_text, sniff_upload
 
 # ---------------------------------------------------------------- settings
 def get_setting(conn, key):
-    v = scalar(conn, "SELECT value FROM hp_settings WHERE key=?", (key,))
+    v = scalar(conn, "SELECT value FROM hp_settings WHERE [key]=?", (key,))
     return v if v is not None else config.DEFAULT_SETTINGS.get(key)
 
 
 def get_settings(conn):
     out = dict(config.DEFAULT_SETTINGS)
-    out.update({r["key"]: r["value"] for r in rows(conn, "SELECT key, value FROM hp_settings")})
+    out.update({r["key"]: r["value"] for r in rows(conn, "SELECT [key], value FROM hp_settings")})
     return out
 
 
@@ -32,10 +32,11 @@ def set_setting(conn, actor, key, value, perm="admin.settings"):
             raise ValidationError(f"Unknown time zone: {value}")
     old = get_setting(conn, key)
     with transaction(conn):
-        conn.execute("""INSERT INTO hp_settings(key, value, updated_by, updated_at) VALUES (?,?,?,?)
-                        ON CONFLICT(key) DO UPDATE SET value=excluded.value,
-                        updated_by=excluded.updated_by, updated_at=excluded.updated_at""",
-                     (key, value, actor.user_id, utcnow()))
+        updated = conn.execute("UPDATE hp_settings SET value=?, updated_by=?, updated_at=? WHERE [key]=?",
+                               (value, actor.user_id, utcnow(), key)).rowcount
+        if not updated:
+            conn.execute("INSERT INTO hp_settings([key], value, updated_by, updated_at) VALUES (?,?,?,?)",
+                         (key, value, actor.user_id, utcnow()))
         audit.log(conn, actor, "setting.update", "setting", None, key=key, old=old, new=value)
 
 
@@ -194,8 +195,8 @@ def audit_log(conn, actor, entity_type=None, username=None, date_from=None, date
         sql += " AND at >= ?"
         params.append(str(date_from))
     if date_to:
-        sql += " AND at < date(?, '+1 day')"
-        params.append(str(date_to))
+        sql += " AND at < ?"
+        params.append((dt.date.fromisoformat(str(date_to)) + dt.timedelta(days=1)).isoformat())
     sql += " ORDER BY id DESC LIMIT ?"
     params.append(int(limit))
     return rows(conn, sql, params)

@@ -7,10 +7,9 @@ Dubai Municipality guidance before use.
 """
 
 import datetime as dt
-import sqlite3
 
 from . import config
-from .db import row, rows, transaction, utcnow
+from .db import IntegrityError, insert_if_absent, row, rows, scalar, transaction, utcnow
 from .permissions import Actor
 from .security import generate_password
 from .services import checklists, expiry, regsources, scoring, staff as staff_svc, users
@@ -165,7 +164,7 @@ def init_reference_data(conn):
     now = utcnow()
     with transaction(conn):
         for k, v in config.DEFAULT_SETTINGS.items():
-            conn.execute("INSERT OR IGNORE INTO hp_settings(key, value, updated_at) VALUES (?,?,?)", (k, v, now))
+            insert_if_absent(conn, "hp_settings", {"[key]": k, "value": v, "updated_at": now}, ["[key]"])
         for code, name in DEPARTMENTS:
             if not row(conn, "SELECT id FROM hp_departments WHERE code=?", (code,)):
                 conn.execute("INSERT INTO hp_departments(code, name, created_at) VALUES (?,?,?)", (code, name, now))
@@ -173,23 +172,23 @@ def init_reference_data(conn):
         for code, names in OUTLETS.items():
             did = row(conn, "SELECT id FROM hp_departments WHERE code=?", (code,))["id"]
             for n in names:
-                conn.execute("INSERT OR IGNORE INTO hp_outlets(department_id, name, created_at) VALUES (?,?,?)",
-                             (did, n, now))
+                insert_if_absent(conn, "hp_outlets", {"department_id": did, "name": n, "created_at": now},
+                                 ["department_id", "name"])
     review = (today_local(conn) + dt.timedelta(days=90)).isoformat()
-    if not rows(conn, "SELECT id FROM hp_reg_sources LIMIT 1"):
+    if not scalar(conn, "SELECT COUNT(*) FROM hp_reg_sources"):
         for src in REG_SOURCES:
             regsources.save_source(conn, SEED_MANAGER, dict(src, review_date=review))
         report.append("regulatory references")
     src_id = row(conn, "SELECT id FROM hp_reg_sources WHERE title LIKE 'Hotel HACCP%'")["id"]
-    if not rows(conn, "SELECT id FROM hp_expiry_categories LIMIT 1"):
+    if not scalar(conn, "SELECT COUNT(*) FROM hp_expiry_categories"):
         for c in EXPIRY_CATEGORIES:
             expiry.save_category(conn, SEED_MANAGER, dict(c, procedure_note=STARTER_NOTE))
         report.append("expiry categories")
-    if not rows(conn, "SELECT id FROM hp_score_criteria LIMIT 1"):
+    if not scalar(conn, "SELECT COUNT(*) FROM hp_score_criteria"):
         for c in CRITERIA:
             scoring.save_criterion(conn, SEED_MANAGER, c)
         report.append("scoring criteria")
-    if not rows(conn, "SELECT id FROM hp_templates WHERE is_starter=1 LIMIT 1"):
+    if not scalar(conn, "SELECT COUNT(*) FROM hp_templates WHERE is_starter=1"):
         for code, templates in STARTER_TEMPLATES.items():
             did = row(conn, "SELECT id FROM hp_departments WHERE code=?", (code,))["id"]
             for tname, items in templates:
@@ -220,7 +219,7 @@ def seed_demo(conn):
     """Create clearly marked demo staff, accounts, schedules and expiry
     items. Every demo record has is_demo=1 and a DEMO- prefix. Returns
     the generated demo login credentials."""
-    if row(conn, "SELECT id FROM hp_staff WHERE is_demo=1 LIMIT 1"):
+    if scalar(conn, "SELECT COUNT(*) FROM hp_staff WHERE is_demo=1"):
         return None
     creds = []
     today = today_local(conn)
@@ -303,7 +302,7 @@ def remove_demo(conn):
         for uid in uids:
             try:
                 conn.execute("DELETE FROM hp_users WHERE id=?", (uid,))
-            except sqlite3.IntegrityError:
+            except IntegrityError:
                 # Demo user acted on real records: keep the audit link, disable login.
                 conn.execute("UPDATE hp_users SET active=0 WHERE id=?", (uid,))
         conn.execute(f"UPDATE hp_staff SET supervisor_staff_id=NULL WHERE supervisor_staff_id IN ({q(sids)})")

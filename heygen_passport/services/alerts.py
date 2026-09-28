@@ -4,7 +4,7 @@ supervisors/managers, and kept as a permanent record."""
 import datetime as dt
 
 from .. import audit
-from ..db import row, rows, transaction, utcnow
+from ..db import insert_if_absent, row, rows, transaction, utcnow
 from ..permissions import PermissionDenied, dept_scope, has
 from .common import get_setting, today_local
 from .expiry import _ITEM_SELECT, _decorate
@@ -18,9 +18,10 @@ ALERT_TYPES = {
 
 
 def _add(conn, key, atype, severity, entity_type, entity_id, dept, staff_id, message):
-    cur = conn.execute("""INSERT OR IGNORE INTO hp_alerts(alert_key, alert_type, severity, entity_type, entity_id,
-                          department_id, staff_id, message, created_at) VALUES (?,?,?,?,?,?,?,?,?)""",
-                       (key, atype, severity, entity_type, entity_id, dept, staff_id, message, utcnow()))
+    cur = insert_if_absent(conn, "hp_alerts", {
+        "alert_key": key, "alert_type": atype, "severity": severity, "entity_type": entity_type,
+        "entity_id": entity_id, "department_id": dept, "staff_id": staff_id, "message": message,
+        "created_at": utcnow()}, ["alert_key"])
     if cur.rowcount:
         audit.log(conn, None, "alert.raise", "alert", cur.lastrowid, dept, type=atype, message=message)
     return cur.rowcount

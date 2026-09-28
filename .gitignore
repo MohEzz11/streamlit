@@ -5,3 +5,7 @@ heygen_passport/data/
 *.db-shm
 __pycache__/
 .pytest_cache/
+
+# Local connection settings (may contain credentials) stay on the hotel machine
+heygen_passport/local.env
+*.bak
