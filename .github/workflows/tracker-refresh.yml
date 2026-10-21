@@ -1,0 +1,66 @@
+# Hourly refresh for the M.E. Opinion Tracker.
+#
+# Pulls new X posts and classifies them into the Supabase database the
+# Streamlit app reads from. Configure in GitHub: Settings > Secrets and
+# variables > Actions.
+#
+#   Secrets   SUPABASE_DB_URL    required (Session pooler URI); the job skips without it
+#             ANTHROPIC_API_KEY  stance classification (keyword rules without it)
+#             X_BEARER_TOKEN     paid X API access (only classifies stored posts without it)
+#   Variables TRACKER_HANDLES    space-separated handles, default "aleabitoreddit"
+#             TRACKER_MODEL      optional, e.g. claude-haiku-5-5 for lower cost
+#
+# Run it by hand from the Actions tab with "Run workflow".
+
+name: Tracker hourly refresh
+
+on:
+  schedule:
+    - cron: "17 * * * *"   # minute 17 of every hour, UTC
+  workflow_dispatch:
+
+concurrency:
+  group: tracker-refresh
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      X_BEARER_TOKEN: ${{ secrets.X_BEARER_TOKEN }}
+      TRACKER_HANDLES: ${{ vars.TRACKER_HANDLES || 'aleabitoreddit' }}
+      TRACKER_MODEL: ${{ vars.TRACKER_MODEL }}
+    steps:
+      - name: Check configuration
+        id: config
+        run: |
+          if [ -z "$SUPABASE_DB_URL" ]; then
+            echo "::notice::SUPABASE_DB_URL secret is not set, so there is nowhere to save results. Skipping."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v4
+        if: steps.config.outputs.ready == 'true'
+
+      - uses: actions/setup-python@v5
+        if: steps.config.outputs.ready == 'true'
+        with:
+          python-version: "3.12"
+
+      # Only what the refresh needs; the full requirements.txt also pulls in
+      # TradingAgents for the other app, which is slow to install.
+      - name: Install dependencies
+        if: steps.config.outputs.ready == 'true'
+        run: pip install "anthropic>=1.17" pandas requests "sqlalchemy>=2.0" "psycopg[binary]>=3.2"
+
+      - name: Refresh
+        if: steps.config.outputs.ready == 'true'
+        run: python -m opinion_tracker.refresh --require-db $TRACKER_HANDLES

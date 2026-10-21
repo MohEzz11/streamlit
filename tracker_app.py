@@ -326,8 +326,9 @@ with tab_data:
     st.markdown("#### Hourly updates")
     st.code(f"SUPABASE_DB_URL=... X_BEARER_TOKEN=... ANTHROPIC_API_KEY=... "
             f"python -m opinion_tracker.refresh {handle}", language="bash")
-    st.caption("Schedule this with cron or a GitHub Actions workflow to refresh "
-               "every hour. Hosted Streamlit apps do not run background jobs.")
+    st.caption("The repo's GitHub Actions workflow (Tracker hourly refresh) runs "
+               "this every hour once SUPABASE_DB_URL is set as a repository secret. "
+               "Hosted Streamlit apps do not run background jobs themselves.")
 
 
 if df.empty:

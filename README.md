@@ -39,7 +39,22 @@ much less accurate). Without an X token, use file upload.
 
 ### Hourly refresh
 
-Hosted Streamlit apps do not run background jobs. Schedule this instead:
+Hosted Streamlit apps do not run background jobs, so a GitHub Actions
+workflow (`.github/workflows/tracker-refresh.yml`) runs at minute 17 of every
+hour. It writes to the same Supabase database the app reads. Set it up in
+GitHub under **Settings > Secrets and variables > Actions**:
+
+| Type | Name | Needed? |
+|---|---|---|
+| Secret | `SUPABASE_DB_URL` | Required. The job skips itself until this is set. |
+| Secret | `ANTHROPIC_API_KEY` | For Claude classification. Keyword rules without it. |
+| Secret | `X_BEARER_TOKEN` | To fetch new posts. Without it, only stored posts are classified. |
+| Variable | `TRACKER_HANDLES` | Space-separated handles. Default `aleabitoreddit`. |
+| Variable | `TRACKER_MODEL` | Optional, e.g. `claude-haiku-5-5` to cut cost. |
+
+Test it from the **Actions** tab: pick "Tracker hourly refresh", then **Run workflow**.
+
+To run the same refresh anywhere else (cron on a server, your laptop):
 
 ```bash
 SUPABASE_DB_URL=... X_BEARER_TOKEN=... ANTHROPIC_API_KEY=... python -m opinion_tracker.refresh aleabitoreddit
