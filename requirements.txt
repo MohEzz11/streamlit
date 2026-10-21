@@ -1,3 +1,6 @@
 streamlit
 pandas
 tradingagents @ git+https://github.com/TauricResearch/TradingAgents.git
+anthropic>=1.17
+yfinance
+requests
