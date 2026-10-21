@@ -1,5 +1,6 @@
 """Copy a local SQLite history into Supabase (or any Postgres).
 
+    cd tracker
     SUPABASE_DB_URL="postgresql://..." python -m opinion_tracker.migrate opinion_tracker.db
 
 Rows already in the destination are kept, so it is safe to run twice.
