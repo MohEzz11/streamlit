@@ -1,0 +1,11 @@
+# M.E. Opinion Tracker only. Streamlit Cloud reads this file because it sits
+# next to the main file (tracker/tracker_app.py), so the tracker does not
+# install TradingAgents from the repo-root requirements.txt.
+streamlit>=1.40
+pandas
+altair
+anthropic>=1.17
+yfinance
+requests
+sqlalchemy>=2.0
+psycopg[binary]>=3.2

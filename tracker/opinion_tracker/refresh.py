@@ -1,5 +1,6 @@
 """Command-line refresh for scheduled runs (cron, GitHub Actions, etc.).
 
+    cd tracker
     SUPABASE_DB_URL=... X_BEARER_TOKEN=... ANTHROPIC_API_KEY=... \\
         python -m opinion_tracker.refresh aleabitoreddit [more_handles ...]
 

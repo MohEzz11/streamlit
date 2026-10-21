@@ -6,7 +6,9 @@ mention tagged bullish, bearish, neutral or background, with stance history,
 price since first mention, source links, AI thesis summaries, and a track
 record measured against a benchmark.
 
-Run:  streamlit run tracker_app.py
+Run:  streamlit run tracker/tracker_app.py   (from the repo root)
+Dependencies are in tracker/requirements.txt, separate from the repo-root
+requirements.txt so this app does not install TradingAgents.
 
 KEYS (Streamlit Secrets or the sidebar):
     ANTHROPIC_API_KEY = "sk-ant-..."   # stance classification and Q&A
@@ -324,7 +326,7 @@ with tab_data:
         run_classification()
 
     st.markdown("#### Hourly updates")
-    st.code(f"SUPABASE_DB_URL=... X_BEARER_TOKEN=... ANTHROPIC_API_KEY=... "
+    st.code(f"cd tracker && SUPABASE_DB_URL=... X_BEARER_TOKEN=... ANTHROPIC_API_KEY=... "
             f"python -m opinion_tracker.refresh {handle}", language="bash")
     st.caption("The repo's GitHub Actions workflow (Tracker hourly refresh) runs "
                "this every hour once SUPABASE_DB_URL is set as a repository secret. "

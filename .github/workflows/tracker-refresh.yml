@@ -55,12 +55,12 @@ jobs:
         with:
           python-version: "3.12"
 
-      # Only what the refresh needs; the full requirements.txt also pulls in
-      # TradingAgents for the other app, which is slow to install.
+      # Only what the refresh needs: no Streamlit, yfinance or TradingAgents.
       - name: Install dependencies
         if: steps.config.outputs.ready == 'true'
         run: pip install "anthropic>=1.17" pandas requests "sqlalchemy>=2.0" "psycopg[binary]>=3.2"
 
       - name: Refresh
         if: steps.config.outputs.ready == 'true'
+        working-directory: tracker
         run: python -m opinion_tracker.refresh --require-db $TRACKER_HANDLES

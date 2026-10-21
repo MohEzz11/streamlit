@@ -6,7 +6,12 @@ Trading agents GitHub repository
 | App | Run | What it does |
 |---|---|---|
 | M.E. Portfolio Ai Agent | `streamlit run app.py` | Multi-agent AI research on single stocks and saved portfolios (TradingAgents) |
-| M.E. Opinion Tracker | `streamlit run tracker_app.py` | Turns an analyst's public X posts into a stance dashboard with a track record |
+| M.E. Opinion Tracker | `streamlit run tracker/tracker_app.py` | Turns an analyst's public X posts into a stance dashboard with a track record |
+
+Each app has its own dependencies: `requirements.txt` at the root for the
+Portfolio Agent, and `tracker/requirements.txt` for the Opinion Tracker.
+Streamlit Cloud uses the file next to the main file, so the tracker never
+installs TradingAgents.
 
 ## M.E. Opinion Tracker
 
@@ -25,14 +30,16 @@ stock mention bullish, bearish, neutral or background, and builds:
 
 ### Setup
 
-1. Add keys in Streamlit Secrets (or paste them in the sidebar):
+1. Deploy on Streamlit Cloud with main file path **`tracker/tracker_app.py`**
+   (Python 3.11 or newer).
+2. Add keys in Streamlit Secrets (or paste them in the sidebar):
    ```toml
    ANTHROPIC_API_KEY = "sk-ant-..."   # stance classification and Q&A
    X_BEARER_TOKEN    = "..."          # paid X API access to read timelines
    ```
-2. Open **Data & refresh**, then fetch from the X API, upload a CSV/JSON of
+3. Open **Data & refresh**, then fetch from the X API, upload a CSV/JSON of
    posts, or load the synthetic demo dataset.
-3. Click **Classify new posts**.
+4. Click **Classify new posts**.
 
 Without an Anthropic key, stances fall back to keyword rules (cashtags only,
 much less accurate). Without an X token, use file upload.
@@ -57,6 +64,7 @@ Test it from the **Actions** tab: pick "Tracker hourly refresh", then **Run work
 To run the same refresh anywhere else (cron on a server, your laptop):
 
 ```bash
+cd tracker
 SUPABASE_DB_URL=... X_BEARER_TOKEN=... ANTHROPIC_API_KEY=... python -m opinion_tracker.refresh aleabitoreddit
 ```
 
@@ -81,6 +89,7 @@ Community Cloud wipes on every reboot or redeploy. To keep data:
 To move an existing local history into Supabase:
 
 ```bash
+cd tracker
 SUPABASE_DB_URL="postgresql://..." python -m opinion_tracker.migrate opinion_tracker.db
 ```
 
