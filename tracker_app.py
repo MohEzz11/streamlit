@@ -11,6 +11,8 @@ Run:  streamlit run tracker_app.py
 KEYS (Streamlit Secrets or the sidebar):
     ANTHROPIC_API_KEY = "sk-ant-..."   # stance classification and Q&A
     X_BEARER_TOKEN    = "..."          # paid X API access, to pull posts
+    SUPABASE_DB_URL   = "postgresql://postgres.<ref>:<pw>@<pooler host>:5432/postgres"
+                                       # persistent storage; local SQLite if unset
 
     [credentials]                      # optional login gate
     user1 = "password1"
@@ -24,7 +26,6 @@ it tracks.
 
 import datetime as dt
 import html
-import os
 
 import altair as alt
 import pandas as pd
@@ -139,19 +140,25 @@ require_login()
 inject_style()
 header()
 
+try:
+    db.configure(get_secret("SUPABASE_DB_URL") or get_secret("DATABASE_URL"))
+except Exception as e:
+    st.error("Could not connect to the database. Check SUPABASE_DB_URL in Secrets: "
+             "use the Session pooler string from Supabase (Connect button), with "
+             f"your database password filled in.\n\n{type(e).__name__}: {e}")
+    st.stop()
+
 
 # ---------------------------------------------------------------------------
 # Cached data access
 # ---------------------------------------------------------------------------
+@st.cache_data(ttl=60, show_spinner=False)
 def db_version():
-    try:
-        return os.path.getmtime(db.DB_FILE)
-    except OSError:
-        return 0
+    return db.data_version()
 
 
 @st.cache_data(show_spinner=False)
-def load_mentions(handle, _version):
+def load_mentions(handle, version):
     return db.mentions_frame(handle)
 
 
@@ -164,7 +171,7 @@ def load_prices(tickers, start, symbol_map_items):
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
-def load_performance(handle, _version, symbol_map_items, benchmark):
+def load_performance(handle, version, symbol_map_items, benchmark):
     df = db.mentions_frame(handle)
     try:
         return analytics.call_performance(df, dict(symbol_map_items), benchmark)
@@ -263,6 +270,11 @@ with tab_data:
     c[1].metric("Classified", f"{stats['classified']:,}")
     c[2].metric("Stock mentions", f"{stats['mentions']:,}")
     c[3].metric("Distinct tickers", f"{stats['tickers']:,}")
+    if db.backend() == "Postgres":
+        st.caption("Storage: Supabase Postgres. Data persists across reboots and redeploys.")
+    else:
+        st.warning("Storage: local SQLite file. On Streamlit Cloud it is wiped on every "
+                   "reboot or redeploy. Add SUPABASE_DB_URL to Secrets to keep data.")
 
     st.markdown("#### 1. Get posts")
     src = st.radio("Source", ["X API", "Upload CSV / JSON", "Synthetic demo data"],
@@ -312,7 +324,7 @@ with tab_data:
         run_classification()
 
     st.markdown("#### Hourly updates")
-    st.code(f"X_BEARER_TOKEN=... ANTHROPIC_API_KEY=... "
+    st.code(f"SUPABASE_DB_URL=... X_BEARER_TOKEN=... ANTHROPIC_API_KEY=... "
             f"python -m opinion_tracker.refresh {handle}", language="bash")
     st.caption("Schedule this with cron or a GitHub Actions workflow to refresh "
                "every hour. Hosted Streamlit apps do not run background jobs.")

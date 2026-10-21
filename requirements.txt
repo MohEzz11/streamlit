@@ -4,3 +4,5 @@ tradingagents @ git+https://github.com/TauricResearch/TradingAgents.git
 anthropic>=1.17
 yfinance
 requests
+sqlalchemy>=2.0
+psycopg[binary]>=3.2

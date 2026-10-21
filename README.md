@@ -42,14 +42,40 @@ much less accurate). Without an X token, use file upload.
 Hosted Streamlit apps do not run background jobs. Schedule this instead:
 
 ```bash
-X_BEARER_TOKEN=... ANTHROPIC_API_KEY=... python -m opinion_tracker.refresh aleabitoreddit
+SUPABASE_DB_URL=... X_BEARER_TOKEN=... ANTHROPIC_API_KEY=... python -m opinion_tracker.refresh aleabitoreddit
+```
+
+### Persistent storage (Supabase)
+
+Without a database URL the app uses a local SQLite file, which Streamlit
+Community Cloud wipes on every reboot or redeploy. To keep data:
+
+1. Create a free project at [supabase.com](https://supabase.com) and save the
+   database password.
+2. Click **Connect** at the top of the project, choose **Session pooler**, and
+   copy the URI. Streamlit Cloud cannot reach the direct
+   `db.<ref>.supabase.co` host because it is IPv6 only.
+3. Add it to Streamlit Secrets with your password filled in:
+   ```toml
+   SUPABASE_DB_URL = "postgresql://postgres.<ref>:<password>@aws-0-<region>.pooler.supabase.com:5432/postgres"
+   ```
+   If the password contains `@`, `:`, `/` or `#`, URL-encode it (for example `@` becomes `%40`).
+4. Reboot the app. Tables are created automatically, and the Data & refresh
+   tab shows "Storage: Supabase Postgres".
+
+To move an existing local history into Supabase:
+
+```bash
+SUPABASE_DB_URL="postgresql://..." python -m opinion_tracker.migrate opinion_tracker.db
 ```
 
 ### Notes
 
 - Non-US tickers need a Yahoo symbol in the sidebar map (`SIVE=SIVE.ST`).
-- Data is stored in `opinion_tracker.db` (SQLite). On Streamlit Community
-  Cloud it resets on reboot; use a persistent host or database for production.
+- The app turns on row level security for its tables, with no policies, so
+  Supabase's public REST API key cannot read or change them. Only the
+  connection string (which holds your database password) can. Keep it in
+  Secrets, never in the repo.
 - Research tool only. Not investment advice. Not affiliated with any account
   it tracks. Check X's developer terms before publishing or selling data
   derived from someone's posts.
