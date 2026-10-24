@@ -1,6 +1,16 @@
 # LG TV Custom Home Screen
 
-A clean, ad-free home screen for the LG 55UQ91006LC (webOS 22, firmware 04.60.90), styled after the reference design: greeting, big clock, date, quick buttons (Inputs, Wi-Fi, Settings) and large coloured app tiles with a background glow that follows the focused app.
+A clean, ad-free home screen for the LG 55UQ91006LC (webOS 22, firmware 04.60.90): greeting, big clock, date, quick buttons (Inputs, Wi-Fi, Settings), daily prayer times, rotating green nature photos, and large app tiles.
+
+## Features (v1.1)
+
+| Feature | Details |
+|---|---|
+| App tiles | Netflix, Shahid, OSN+, Prime Video, Disney+, YouTube, Apple TV, STARZPLAY, Live TV, beIN CONNECT, YouTube Kids, Spotify, Anghami, Browser. Rows scroll sideways, so you can add as many as you like |
+| Smart matching | Apps are found by name on your TV, so exact app IDs are not needed. Apps that are not installed are hidden automatically |
+| All Apps row | Every app installed on the TV appears in the last row with its real icon |
+| Prayer times | Fajr, Sunrise, Dhuhr, Asr, Maghrib, Isha with the next prayer highlighted and a countdown. Calculated on the TV (no internet), UAE Awqaf angles, Dubai by default. A reminder pops up at each prayer time |
+| Backgrounds | Green nature photos from Wikimedia Commons, downloaded by the TV and changed every 90 seconds, with photo credit. Falls back to a bundled green-hills image when offline. You can also use your own photos |
 
 ![Preview](preview.png)
 
@@ -8,7 +18,7 @@ A clean, ad-free home screen for the LG 55UQ91006LC (webOS 22, firmware 04.60.90
 
 | File | Purpose |
 |---|---|
-| `com.mohezz.homescreen_1.0.0_all.ipk` | Ready-to-install TV app |
+| `com.mohezz.homescreen_1.1.0_all.ipk` | Ready-to-install TV app |
 | `app/config.js` | The only file you need to edit: tiles, colours, order, buttons |
 | `app/main.js` | Clock, remote control navigation, app launching |
 | `app/style.css` | Look and feel |
@@ -85,7 +95,7 @@ When asked for a passphrase, enter the 6-character code shown in the Developer M
 From this folder:
 
 ```bash
-ares-install --device mytv com.mohezz.homescreen_1.0.0_all.ipk
+ares-install --device mytv com.mohezz.homescreen_1.1.0_all.ipk
 ares-launch  --device mytv com.mohezz.homescreen
 ```
 
@@ -107,19 +117,29 @@ Press **Home** on the remote, long-press the **My Home** app, and move it to the
 
 ## Customising
 
-Edit `app/config.js`: add, remove or reorder tiles and change colours. To find the exact ID of any app installed on your TV:
+Edit `app/config.js`:
+
+| What | Where in config.js |
+|---|---|
+| Add, remove, reorder tiles, colours | `rows` (use `match` with part of the app name as it appears on the TV) |
+| Hide the All Apps row | `showAllApps: false` |
+| Prayer city | `prayer.lat` / `prayer.lng` (Abu Dhabi, Sharjah, Riyadh listed in the file) |
+| Match your mosque or the Awqaf app | `prayer.offsets`, in minutes, e.g. `dhuhr: 2` |
+| Hanafi Asr | `prayer.asrFactor: 2` |
+| Your own photos | Copy JPGs (1920x1080) into `app/backgrounds/` and list them in `backgrounds.local`, e.g. `["forest.jpg", "garden.jpg"]` |
+| Photo change speed | `backgrounds.changeEverySeconds` | To find the exact ID of any app installed on your TV:
 
 ```bash
 ares-launch --device mytv --list
 ```
 
-App IDs that may need checking on your TV: Apple TV (`com.apple.appletv`) and Spotify (`spotify-beehive`). If an app is not installed, the screen shows a short message instead of opening it. Regional apps such as Shahid or OSN+ can be added the same way once you have their ID from the list command.
+If the TV does not allow the home screen to list installed apps, tiles without an `id` show a short message instead of opening. In that case, add the `id` from the list command to those tiles.
 
 After editing, rebuild and reinstall:
 
 ```bash
 ares-package app -o .
-ares-install --device mytv com.mohezz.homescreen_1.0.0_all.ipk
+ares-install --device mytv com.mohezz.homescreen_1.1.0_all.ipk
 ```
 
 You can also preview the design on a laptop by opening `app/index.html` in Chrome.
@@ -132,4 +152,6 @@ You can also preview the design on a laptop by opening `app/index.html` in Chrom
 | Rooting | Depends on the exact firmware. Check https://cani.rootmy.tv with version 04.60.90. Rooting is unofficial, may void warranty, and can be closed by any firmware update. |
 | Firmware updates | Keep them on for security. They do not remove this app, but they can close root exploits if you ever go that route. |
 | Developer Mode expiry | Press Extend in the Developer Mode app before the timer ends, or reinstall with Step 4. |
+| Prayer times | Calculated astronomically; usually within 1 to 2 minutes of the official UAE timetable. Use `offsets` to fine-tune |
+| Online photos | Need the TV to reach commons.wikimedia.org. A DNS ad-blocker will not block it |
 | `requiredACG` packaging warning | Only matters for LG Content Store submission, not for sideloading. |

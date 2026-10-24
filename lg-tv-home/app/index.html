@@ -6,6 +6,9 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <div id="bgA" class="bg"></div>
+  <div id="bgB" class="bg"></div>
+  <div id="shade"></div>
   <div id="glow"></div>
   <header>
     <div class="clock-block">
@@ -13,14 +16,23 @@
       <div class="time-row">
         <span id="time">--:--</span><span id="ampm"></span>
         <span class="divider"></span>
-        <span id="date"></span>
+        <div>
+          <div id="date"></div>
+          <div id="next-prayer"></div>
+        </div>
       </div>
     </div>
-    <nav id="pills"></nav>
+    <div class="right-block">
+      <nav id="pills"></nav>
+      <div id="prayers"></div>
+    </div>
   </header>
   <main><div id="rows"></div></main>
+  <div id="credit"></div>
   <div id="toast"></div>
   <script src="config.js"></script>
+  <script src="prayer.js"></script>
+  <script src="background.js"></script>
   <script src="main.js"></script>
 </body>
 </html>
