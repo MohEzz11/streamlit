@@ -1,0 +1,13 @@
+{
+  "id": "com.mohezz.homescreen",
+  "version": "1.0.0",
+  "vendor": "MohEzz",
+  "type": "web",
+  "main": "index.html",
+  "title": "My Home",
+  "icon": "icon.png",
+  "largeIcon": "largeIcon.png",
+  "bgColor": "#0b0b0d",
+  "resolution": "1920x1080",
+  "disableBackHistoryAPI": true
+}
